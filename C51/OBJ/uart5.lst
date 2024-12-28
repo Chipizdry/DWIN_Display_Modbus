@@ -1,0 +1,164 @@
+C51 COMPILER V9.53.0.0   UART5                                                             12/11/2024 15:57:35 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE UART5
+OBJECT MODULE PLACED IN ..\OBJ\uart5.obj
+COMPILER INVOKED BY: C:\Program Files (x86)\KEIL\C51\BIN\C51.EXE uart5.c LARGE OMF2 OPTIMIZE(3,SIZE) BROWSE INCDIR(..\US
+                    -ER;..\FUNC_HANDLER;..\GUI_APP;..\HANDWARE\UART2) DEBUG PRINT(..\OBJ\uart5.lst) TABS(2) OBJECT(..\OBJ\uart5.obj)
+
+line level    source
+
+   1          
+   2          
+   3          #include "uart5.h"
+   4          
+   5          
+   6          #if(UART5_INT_EN)
+   7          xdata u16 uart5_rx_sta;//bit15Used to mark whether a complete data packet has been received, bit[14:0] is 
+             -used to store the length of the current data packetxdata u8
+   8          xdata u8  uart5_buf[UART5_PACKET_MAX_LEN+2];//Leave 2 blank characters
+   9          xdata u8  uart5_step;
+  10          
+  11          //Serial port 5 interrupt service routine
+  12          //When sending data, the interrupt must be turned off, here is only responsible for processing the receivi
+             -ng interrupt.
+  13          void uart5_isr() interrupt 13 { // Адрес прерывания для UART5 (0x6B)
+  14   1          u8 res;
+  15   1      
+  16   1          if (SCON3R & 0x01) { // Проверяем флаг приёма RI3
+  17   2              SCON3R &= ~0x01; // Сбрасываем флаг приёма
+  18   2              res = SBUF3_RX;  // Читаем принятые данные из регистра
+  19   2      
+  20   2              if (uart5_rx_sta & UART5_PACKET_OK) {
+  21   3                  // Если ранее принятое сообщение ещё не обработано, �
+             -�ыходим
+  22   3                  return;
+  23   3              }
+  24   2      
+  25   2              if (uart5_step == 0) { // Начинаем обработку принятого пакета
+  26   3                  if (res == '\r') {
+  27   4                      // Если получен символ '\r', переходим к ожиданию '\n'
+  28   4                      uart5_step = 1;
+  29   4                  } else if (res == '\n') {
+  30   4                      // Если получен символ '\n', помечаем пакет как заве�
+             -�шённый
+  31   4                      uart5_rx_sta |= UART5_PACKET_OK;
+  32   4                  } else {
+  33   4                      // Сохраняем данные в буфер, если это не конец паке
+             -та
+  34   4                      if (uart5_rx_sta >= UART5_PACKET_MAX_LEN) {
+  35   5                          // Если буфер переполнен, сбрасываем статус и на
+             -чинаем заново
+  36   5                          uart5_rx_sta = 0;
+  37   5                      }
+  38   4                      uart5_buf[uart5_rx_sta++] = res; // Сохраняем данные в буфер
+  39   4                  }
+  40   3              } else if (uart5_step == 1) { // Ожидаем завершающий символ '\n'
+  41   3                  uart5_step = 0;
+  42   3                  if (res == '\n') {
+  43   4                      // Если следующий символ после '\r' — это '\n', помеча�
+             -�м пакет завершённым
+  44   4                      uart5_rx_sta |= UART5_PACKET_OK;
+  45   4                  } else {
+  46   4                      // Если это не '\n', сбрасываем статус и начинаем зан
+             -ово
+C51 COMPILER V9.53.0.0   UART5                                                             12/11/2024 15:57:35 PAGE 2   
+
+  47   4                      uart5_rx_sta = 0;
+  48   4                  }
+  49   3              }
+  50   2          }
+  51   1      }
+  52          
+  53          #endif
+  54          
+  55          // Serial port 5 initialization
+  56          void uart5_init(u32 baud) {
+  57   1          // MUX_SEL |= 0x80; // Setting bit6 and bit7 to 1 exports UART5 interface to appropriate pins
+  58   1          P0MDOUT &= 0x3F; // Clear bits for UART5 pins
+  59   1          P0MDOUT |= 0x80; // Set P0.7 as output for TX and P0.6 as input for RX
+  60   1      
+  61   1          ADCON = 0x80; // Select SREL3H:L as the baud rate generator for UART5
+  62   1          SCON3T = 0x80; // Enable transmission
+  63   1          SCON3R = 0x80; // Enable reception
+  64   1      
+  65   1          // Baud rate setting formula:
+  66   1          // SREL3H:L = 1024 - (FOSC / (32 * baud rate))
+  67   1          baud = 1024 - (u16)(3225600.0f / baud);
+  68   1          BODE3_DIV_H = (baud >> 8) & 0xFF; // High byte of the baud rate divisor
+  69   1          BODE3_DIV_L = baud & 0xFF;        // Low byte of the baud rate divisor
+  70   1      
+  71   1          #if(UART5_INT_EN)
+  72   1        
+  73   1              IP1 = 0x28; // Биты 3 (G3) и 5 (G5) установлены
+  74   1              IP0 = 0x00; // Остальные группы остаются с низким приоритет
+             -ом
+  75   1      
+  76   1              ES3R = 1; // Enable UART5 RX interrupt
+  77   1              ES3T = 1; // Enable UART5 TX interrupt
+  78   1              EA = 1;   // Enable global interrupts
+  79   1          #else
+                      ES3R = 0; // Disable UART5 RX interrupt
+                      ES3T = 0; // Disable UART5 TX interrupt
+                  #endif
+  83   1      }
+  84          
+  85          
+  86          void u5_send_byte(u8 byte) {
+  87   1          ES3T = 0;              // Отключаем прерывания передачи для UART5
+  88   1          SBUF3_TX = byte;       // Отправляем байт через регистр передачи
+  89   1          while (!SCON3T);          // Ждём завершения передачи (TI3 == 1)
+  90   1          SCON3T = 0;               // Сбрасываем флаг передачи
+  91   1          #if(UART5_INT_EN)
+  92   1              ES3T = 1;          // Повторно включаем прерывания передачи, е�
+             -�ли активированы
+  93   1          #endif
+  94   1      }
+  95          
+  96          //Send data
+  97          void u5_send_bytes(u8 *bytes, u16 len) {
+  98   1          u16 i;
+  99   1      
+ 100   1          ES3T = 0;              // Отключаем прерывания передачи UART5
+ 101   1          for (i = 0; i < len; i++) {
+ 102   2              SBUF3_TX = bytes[i]; // Записываем текущий байт в регистр перед�
+             -�чи
+ 103   2              while (!(SCON3T & 0x01)); // Ждём, пока флаг TI не будет установлен
+ 104   2              SCON3T &= ~0x01;       // Сбрасываем флаг TI
+ 105   2          }
+C51 COMPILER V9.53.0.0   UART5                                                             12/11/2024 15:57:35 PAGE 3   
+
+ 106   1          #if(UART5_INT_EN)
+ 107   1              ES3T = 1;          // Включаем прерывания передачи, если они ак
+             -тивированы
+ 108   1          #endif
+ 109   1      }
+ 110          
+ 111          
+ 112          //Implement printf function with uart2 serial port
+ 113          char putchar5(char c)
+ 114          {
+ 115   1        u5_send_byte(c);
+ 116   1        
+ 117   1        return c;
+ 118   1      }
+ 119          
+ 120          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    446    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    105      14
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

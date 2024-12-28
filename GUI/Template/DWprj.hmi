@@ -1,0 +1,15 @@
+[INIT]
+PICFIX=1
+VARCount=64
+Version=1
+SCREENDSIZE=480X480
+SPADDRESS=5000
+ProVersion=641
+[CMD]
+CMD0=0000=
+[IMG]
+00=00.jpg
+01=01.jpg
+02=02.jpg
+03=10.jpg
+04=11.jpg
