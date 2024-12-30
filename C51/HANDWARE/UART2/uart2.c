@@ -196,9 +196,9 @@ u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket) {
     // Заполняем структуру пакета
     parsedPacket->rcv_address = buffer[0];
     parsedPacket->rcv_functionCode = buffer[1];
-    parsedPacket->rcv_dataLength = length - 4; // Общая длина минус адрес, код функции и CRC
+    parsedPacket->rcv_dataLength = buffer[2]; // Общая длина минус адрес, код функции, и CRC
     for (m = 0; m < parsedPacket->rcv_dataLength; m++) {
-        parsedPacket->rcv_data[m] = buffer[2 + m];
+        parsedPacket->rcv_data[m] = buffer[3 + m];
     }
      return 1;
    

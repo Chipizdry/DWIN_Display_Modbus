@@ -47,12 +47,12 @@ void main(void)
 
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[6] = {
-    {0x1, 0x3, 0x0000, 0x01},   // Устройство 1
-    {0x1, 0x3, 0x0008, 0x2},   // Устройство 2
-    {0x1, 0x3, 0x0002, 0x2},   // Устройство 3
-    {0x1, 0x3, 0x0020, 0x4},   // Устройство 4
-    {0xFF, 0x3, 0x00FD, 0x01},  // Устройство 5
-    {0xFF, 0x3, 0x002F, 0x1}   // Устройство 6
+    {0x1, 0x3, 0x0000, 0x1},   // Устройство 1
+    {0x2, 0x3, 0x0008, 0x1},   // Устройство 2
+    {0x3, 0x3, 0x0002, 0x2},   // Устройство 3
+    {0x4, 0x3, 0x0020, 0x4},   // Устройство 4
+    {0x5, 0x3, 0x00FD, 0x1},  // Устройство 5
+    {0x6, 0x3, 0x002F, 0x1}   // Устройство 6
 };
 
  idata  ModbusRequest temp_request;
@@ -64,16 +64,16 @@ idata  ModbusRequest request[6] = {
   u8 buff[512]={0, };
   u16 recv_len;
 	idata u8 command_value; // Объявление переменной
-	
-	
-	 ModbusPacket receivedPacket;
+	float temperature;
+	u16 rawValue;
+	idata ModbusPacket receivedPacket;
 	
 	sys_init();//System initialization
 	
 		
-		 sys_write_vp(0x2005,FIRST_TXT,sizeof(FIRST_TXT)/2+1);//
+		 sys_write_vp(0x2010,FIRST_TXT,sizeof(FIRST_TXT)/2+1);//
      sys_delay_ms(1000);
-	   sys_write_vp(0x2037,TEST_TXT,sizeof(TEST_TXT)/2+1);
+	   sys_write_vp(0x2042,TEST_TXT,sizeof(TEST_TXT)/2+1);
 	   uart2_init(9600);//Initialize serial port 2
 	
 	   modbus_requests(&request[0]);
@@ -95,7 +95,7 @@ idata  ModbusRequest request[6] = {
 				recv_len += sprintf(buff+recv_len,"%02X ",(u16)uart2_buf[i]);
 			}
 		
-			sys_write_vp(0x2005,buff,recv_len/2+1);
+			sys_write_vp(0x2010,buff,recv_len/2+1);
 			
 			uart2_rx_sta = 0;
 			
@@ -134,25 +134,52 @@ if (polling_state==0) {
         // Если получен ответ
 			
         if (rcv_complete==1) {
-					  sys_write_vp(0x2037, "Received        \n", 9);
+					  sys_write_vp(0x2042, "Received        \n", 9);
 					
 					 if (parseModbusPacket(uart2_buf,len, &receivedPacket)==1) {   
 						 
-						 
+						  switch (receivedPacket.rcv_address) { 
+								
+							 case 0x01:	{
 						 
 						 switch (receivedPacket.rcv_functionCode) {
             case 0x03: // Чтение регистров
-              //  sys_write_vp(0x2007, receivedPacket.data, receivedPacket.dataLength);
-                break;
-            case 0x04: // Чтение входных регистров
+							 { 
+                    // Проверяем длину данных
+                    if (receivedPacket.rcv_dataLength >= 2) {
+                        // Извлекаем данные (первый регистр)
+                        rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
+                        if (rawValue & 0x8000) { // Проверяем знак числа
+                            rawValue = rawValue - 65536; // Отрицательное значение
+                        }
+                       temperature = rawValue / 10.0; // Масштабирование
+                       sys_write_vp(0x2005,(u8*)&temperature,2);
+												
+                    } else {
+                        printf("Error: Insufficient data length for temperature\n");
+                    }
+                    break;
+                }
+                    break;
+             case 0x04: // Чтение входных регистров
               //  sys_write_vp(0x2008, receivedPacket.data, receivedPacket.dataLength);
-                break;
-            default:
+                 break;
+             default:
                // sys_write_vp(0x2009, "Unsupported Function\n", 21);
                 break;
-        }
+             }
 						 
+				     default:
+               
+                break;
+						 
+					 } 
+							 break;
+					 
+					
+				 } 
 					 }
+					 else{ sys_write_vp(0x2096, "ERROR\n", 4); }
 					
 					
 					
@@ -165,7 +192,7 @@ if (polling_state==0) {
         // Если время ожидания истекло
          if (polling_timer ==0) {
             // Логируем таймаут (опционально)
-            sys_write_vp(0x2037, "Timeout         \n", 9);
+            sys_write_vp(0x2042, "Timeout         \n", 9);
 
             // Переход к следующему устройству
              current_device=current_device+1;

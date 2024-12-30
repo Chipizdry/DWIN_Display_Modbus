@@ -22,7 +22,7 @@ typedef signed long     s32;
 typedef struct {
 	  u8 rcv_address;        // Адрес устройства
     u8 rcv_functionCode;   // Код функции
-    u8 rcv_data[256];      // Данные (макс. длина)
+    u8 rcv_data[16];      // Данные (макс. длина)
     u16 rcv_dataLength;    // Длина данных
 } ModbusPacket;
 				
