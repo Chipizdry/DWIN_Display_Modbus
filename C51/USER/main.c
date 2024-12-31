@@ -68,9 +68,10 @@ idata  ModbusRequest request[6] = {
 	u16 rawValue;
  xdata ModbusPacket receivedPacket;
 	
-u16 receive_cmd=0;
-xdata u16 receive_adr=0;
+//u16 receive_cmd=0;
+//xdata u16 receive_adr=0;
 
+ xdata u16 result=0;	
 	sys_init();//System initialization
 	
 		
@@ -91,12 +92,12 @@ xdata u16 receive_adr=0;
 		
 			len = uart2_rx_sta&UART2_PACKET_LEN;
 			
-       receive_adr=	uart2_buf[0];	
-	     receive_cmd=	uart2_buf[1];	
+      // receive_adr=	uart2_buf[0];	
+	    // receive_cmd=	uart2_buf[1];	
 			//memcpy(localBuffer, uart2_buf, len);
 		  sys_write_vp(0x2069, (u16*)&len, 2);
-			sys_write_vp(0x2065, (u16*)&receive_adr, 1);
-		  sys_write_vp(0x2067, (u16*)&receive_cmd, 1);
+			//sys_write_vp(0x2065, &receive_adr, 1);
+		 // sys_write_vp(0x2067, &receive_cmd, 1);
 			recv_len = 0;
 			for(i=0;i<len;i++)
 			{
@@ -104,12 +105,14 @@ xdata u16 receive_adr=0;
 			}
 		
 			sys_write_vp(0x2010,buff,recv_len/2+1);
-			
-			 if (parseModbusPacket(uart2_buf,len,(ModbusPacket*)&receivedPacket)==1) {   
+			result=parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket);
+			 sys_write_vp(0x2071, &result, 1);
+			 if (result==1) {   
 						 sys_write_vp(0x2096, "OK    \n", 4);}
 			 else{ sys_write_vp(0x2096, "ERROR\n", 4); }
 			
 		  	uart2_rx_sta = 0;
+			  len=0;
 			
 		}
 	 

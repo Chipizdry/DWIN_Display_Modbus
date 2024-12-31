@@ -33,8 +33,8 @@ void uart2_isr() interrupt 4 {
 
         // Сохраняем данные в буфер
         if (uart2_rx_sta < UART2_PACKET_MAX_LEN) {
-            uart2_buf[uart2_rx_sta++] = res;
-					
+            uart2_buf[uart2_rx_sta] = res;
+					  uart2_rx_sta++;
         } else {
             uart2_rx_sta = 0;  // Если буфер переполнен, сбрасываем
             return;
@@ -178,7 +178,12 @@ void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg) {
 	  u16 receivedCRC;
 	  u16 calculatedCRC; 
 	  unsigned int m;  
-		
+		 u16 receive_adr;
+		 u16 receive_cmd;
+		 receive_adr=	buffer[0];	
+	   receive_cmd=	buffer[1];	
+			sys_write_vp(0x2065, &receive_adr, 1);
+		  sys_write_vp(0x2067, &receive_cmd, 1);
 		
     if (length < 4) {
         // Минимальная длина пакета: адрес (1 байт) + функция (1 байт) + CRC (2 байта)
@@ -187,7 +192,7 @@ void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg) {
 
     // Извлекаем CRC из конца пакета
 		
-    receivedCRC = buffer[length - 2] | (buffer[length - 1] << 8);
+    receivedCRC = buffer[length - 1] | (buffer[length - 2] << 8);
 
     // Вычисляем CRC для проверки
     calculatedCRC = calculate_crc(buffer, length - 2);
