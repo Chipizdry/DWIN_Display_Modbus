@@ -7,7 +7,7 @@
 #define UART2_INT_EN							1				//Whether the serial port interrupt is enabled
 #define UART2_PACKET_OK						0x8000  //Whether the complete packet was received
 #define UART2_PACKET_LEN					0x7fff	//Length of packet
-#define UART2_PACKET_MAX_LEN			100			//Defines the maximum length of the serial port package, excluding '\n' or "\r\n" end tags
+#define UART2_PACKET_MAX_LEN			64			//Defines the maximum length of the serial port package, excluding '\n' or "\r\n" end tags
 
 
 //Variable declaration

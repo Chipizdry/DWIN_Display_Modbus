@@ -20,9 +20,9 @@ typedef signed long     s32;
 
 // Пример структуры Modbus пакета
 typedef struct {
-	  u8 rcv_address;        // Адрес устройства
-    u8 rcv_functionCode;   // Код функции
-    u8 rcv_data[16];      // Данные (макс. длина)
+	  u16 rcv_address;        // Адрес устройства
+    u16 rcv_functionCode;   // Код функции
+    u16 rcv_data[16];      // Данные (макс. длина)
     u16 rcv_dataLength;    // Длина данных
 } ModbusPacket;
 				

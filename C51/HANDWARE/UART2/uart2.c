@@ -12,7 +12,7 @@ xdata volatile	u16 current_device=0;
 
 #if(UART2_INT_EN)
 xdata u16 uart2_rx_sta;//bit15Used to mark whether a complete data packet has been received, bit[14:0] is used to store the length of the current data packetxdata u8
-xdata u8  uart2_buf[UART2_PACKET_MAX_LEN+2];//Leave 2 blank characters
+xdata u8  uart2_buf[UART2_PACKET_MAX_LEN];
 xdata u8  uart2_step;
 xdata u8  rcv_complete=0;  // Приём завершён и обработан
 idata u16 data_len=0;
@@ -174,10 +174,12 @@ void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg) {
 }
 
 
-u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket) {
+  u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket) {
 	  u16 receivedCRC;
 	  u16 calculatedCRC; 
 	  unsigned int m;  
+		
+		
     if (length < 4) {
         // Минимальная длина пакета: адрес (1 байт) + функция (1 байт) + CRC (2 байта)
         return 99 ;
@@ -196,7 +198,7 @@ u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket) {
     // Заполняем структуру пакета
     parsedPacket->rcv_address = buffer[0];
     parsedPacket->rcv_functionCode = buffer[1];
-    parsedPacket->rcv_dataLength = buffer[2]; // Общая длина минус адрес, код функции, и CRC
+    parsedPacket->rcv_dataLength = buffer[2]; 
     for (m = 0; m < parsedPacket->rcv_dataLength; m++) {
         parsedPacket->rcv_data[m] = buffer[3 + m];
     }

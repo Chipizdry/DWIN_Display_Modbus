@@ -1,6 +1,6 @@
 #include "sys.h"
 #include "uart2.h"
-
+#include <string.h>
 extern  u8 modbus_addresses[5];     // Адреса устройств
 extern  u16 start_reg;              // Начальный регистр
 extern  u16 num_reg;                // Количество регистров
@@ -47,7 +47,7 @@ void main(void)
 
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[6] = {
-    {0x1, 0x3, 0x0000, 0x1},   // Устройство 1
+    {0x1, 0x3, 0x0000, 0x2},   // Устройство 1
     {0x2, 0x3, 0x0008, 0x1},   // Устройство 2
     {0x3, 0x3, 0x0002, 0x2},   // Устройство 3
     {0x4, 0x3, 0x0020, 0x4},   // Устройство 4
@@ -61,13 +61,16 @@ idata  ModbusRequest request[6] = {
 	u8 polling_state;                     // Состояние опроса: 0 - отправка, 1 - ожидание
 	u16 len;
 	u16 i;
-  u8 buff[512]={0, };
+  u8 buff[64]={0, };
   u16 recv_len;
 	idata u8 command_value; // Объявление переменной
 	float temperature;
 	u16 rawValue;
-	idata ModbusPacket receivedPacket;
+ xdata ModbusPacket receivedPacket;
 	
+u16 receive_cmd=0;
+xdata u16 receive_adr=0;
+
 	sys_init();//System initialization
 	
 		
@@ -87,8 +90,13 @@ idata  ModbusRequest request[6] = {
 			
 		
 			len = uart2_rx_sta&UART2_PACKET_LEN;
-		
 			
+       receive_adr=	uart2_buf[0];	
+	     receive_cmd=	uart2_buf[1];	
+			//memcpy(localBuffer, uart2_buf, len);
+		  sys_write_vp(0x2069, (u16*)&len, 2);
+			sys_write_vp(0x2065, (u16*)&receive_adr, 1);
+		  sys_write_vp(0x2067, (u16*)&receive_cmd, 1);
 			recv_len = 0;
 			for(i=0;i<len;i++)
 			{
@@ -97,7 +105,11 @@ idata  ModbusRequest request[6] = {
 		
 			sys_write_vp(0x2010,buff,recv_len/2+1);
 			
-			uart2_rx_sta = 0;
+			 if (parseModbusPacket(uart2_buf,len,(ModbusPacket*)&receivedPacket)==1) {   
+						 sys_write_vp(0x2096, "OK    \n", 4);}
+			 else{ sys_write_vp(0x2096, "ERROR\n", 4); }
+			
+		  	uart2_rx_sta = 0;
 			
 		}
 	 
@@ -113,7 +125,6 @@ if (polling_state==0) {
 				
 				temp_request = request[current_device];
 				modbus_requests((ModbusRequest*)&temp_request);
-		   // modbus_requests(&request[current_device]);
 					sys_write_vp(0x2000,(u8*)&current_device,1);
 				
  
@@ -135,15 +146,15 @@ if (polling_state==0) {
 			
         if (rcv_complete==1) {
 					  sys_write_vp(0x2042, "Received        \n", 9);
-					
-					 if (parseModbusPacket(uart2_buf,len, &receivedPacket)==1) {   
-						 
+					/*
+					 if (parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket)==1) {   
+						 sys_write_vp(0x2096, "OK    \n", 4);
 						  switch (receivedPacket.rcv_address) { 
 								
 							 case 0x01:	{
 						 
-						 switch (receivedPacket.rcv_functionCode) {
-            case 0x03: // Чтение регистров
+						     switch (receivedPacket.rcv_functionCode) {
+               case 0x03: // Чтение регистров
 							 { 
                     // Проверяем длину данных
                     if (receivedPacket.rcv_dataLength >= 2) {
@@ -153,12 +164,11 @@ if (polling_state==0) {
                             rawValue = rawValue - 65536; // Отрицательное значение
                         }
                        temperature = rawValue / 10.0; // Масштабирование
-                       sys_write_vp(0x2005,(u8*)&temperature,2);
-												
-                    } else {
-                        printf("Error: Insufficient data length for temperature\n");
-                    }
-                    break;
+                       sys_write_vp(0x2005,(u8*)&temperature,2);		
+                       } else {
+                      
+                        }
+                    //break;
                 }
                     break;
              case 0x04: // Чтение входных регистров
@@ -175,19 +185,22 @@ if (polling_state==0) {
 						 
 					 } 
 							 break;
-					 
-					
+					  case 0xFF:	{ }
+					      break;
+						
+						
+						
 				 } 
 					 }
 					 else{ sys_write_vp(0x2096, "ERROR\n", 4); }
 					
-					
+					*/
 					
             // Переход к следующему устройству
             current_device=current_device+1;
             polling_state = 0;  // Возврат в состояние отправки
 					  rcv_complete=0;
-					  polling_timer=0;
+					  polling_timer=10000;
         }
         // Если время ожидания истекло
          if (polling_timer ==0) {
@@ -195,7 +208,7 @@ if (polling_state==0) {
             sys_write_vp(0x2042, "Timeout         \n", 9);
 
             // Переход к следующему устройству
-             current_device=current_device+1;
+            current_device=current_device+1;
             polling_state = 0;  // Возврат в состояние отправки
 					  rcv_complete=0;
         }			

@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   UART2                                                             12/30/2024 13:32:43 PAGE 1   
+C51 COMPILER V9.53.0.0   UART2                                                             12/31/2024 13:34:33 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE UART2
@@ -24,7 +24,7 @@ line level    source
   13          #if(UART2_INT_EN)
   14          xdata u16 uart2_rx_sta;//bit15Used to mark whether a complete data packet has been received, bit[14:0] is 
              -used to store the length of the current data packetxdata u8
-  15          xdata u8  uart2_buf[UART2_PACKET_MAX_LEN+2];//Leave 2 blank characters
+  15          xdata u8  uart2_buf[UART2_PACKET_MAX_LEN];
   16          xdata u8  uart2_step;
   17          xdata u8  rcv_complete=0;  // Приём завершён и обработан
   18          idata u16 data_len=0;
@@ -62,7 +62,7 @@ line level    source
   49   3                  uart2_rx_sta |= UART2_PACKET_OK;  // Устанавливаем флаг пакета
   50   3                rcv_complete=1;
   51   3                uart2_step =0;
-C51 COMPILER V9.53.0.0   UART2                                                             12/30/2024 13:32:43 PAGE 2   
+C51 COMPILER V9.53.0.0   UART2                                                             12/31/2024 13:34:33 PAGE 2   
 
   52   3              }
   53   2          }
@@ -126,7 +126,7 @@ line level    source
  111   1        #if(UART2_INT_EN)
  112   1          ES0 = 1;//Re-open interrupt
  113   1        #endif
-C51 COMPILER V9.53.0.0   UART2                                                             12/30/2024 13:32:43 PAGE 3   
+C51 COMPILER V9.53.0.0   UART2                                                             12/31/2024 13:34:33 PAGE 3   
 
  114   1      }
  115          
@@ -190,51 +190,52 @@ line level    source
  171   1      
  172   1          // Отправляем запрос через UART
  173   1          u2_send_bytes(request, 8);
-C51 COMPILER V9.53.0.0   UART2                                                             12/30/2024 13:32:43 PAGE 4   
+C51 COMPILER V9.53.0.0   UART2                                                             12/31/2024 13:34:33 PAGE 4   
 
  174   1      }
  175          
  176          
- 177          u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket) {
+ 177            u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket) {
  178   1          u16 receivedCRC;
  179   1          u16 calculatedCRC; 
  180   1          unsigned int m;  
- 181   1          if (length < 4) {
- 182   2              // Минимальная длина пакета: адрес (1 байт) + функция (1 б�
+ 181   1          
+ 182   1          
+ 183   1          if (length < 4) {
+ 184   2              // Минимальная длина пакета: адрес (1 байт) + функция (1 б�
              -�йт) + CRC (2 байта)
- 183   2              return 99 ;
- 184   2          }
- 185   1      
- 186   1          // Извлекаем CRC из конца пакета
- 187   1          
- 188   1          receivedCRC = buffer[length - 2] | (buffer[length - 1] << 8);
- 189   1      
- 190   1          // Вычисляем CRC для проверки
- 191   1          calculatedCRC = calculate_crc(buffer, length - 2);
- 192   1          if (receivedCRC != calculatedCRC) {
- 193   2              return 98 ; // Ошибка CRC
- 194   2          }
- 195   1      
- 196   1          // Заполняем структуру пакета
- 197   1          parsedPacket->rcv_address = buffer[0];
- 198   1          parsedPacket->rcv_functionCode = buffer[1];
- 199   1          parsedPacket->rcv_dataLength = buffer[2]; // Общая длина минус адрес, код фу�
-             -�кции, и CRC
- 200   1          for (m = 0; m < parsedPacket->rcv_dataLength; m++) {
- 201   2              parsedPacket->rcv_data[m] = buffer[3 + m];
- 202   2          }
- 203   1           return 1;
- 204   1         
- 205   1      }
- 206          
- 207          
+ 185   2              return 99 ;
+ 186   2          }
+ 187   1      
+ 188   1          // Извлекаем CRC из конца пакета
+ 189   1          
+ 190   1          receivedCRC = buffer[length - 2] | (buffer[length - 1] << 8);
+ 191   1      
+ 192   1          // Вычисляем CRC для проверки
+ 193   1          calculatedCRC = calculate_crc(buffer, length - 2);
+ 194   1          if (receivedCRC != calculatedCRC) {
+ 195   2              return 98 ; // Ошибка CRC
+ 196   2          }
+ 197   1      
+ 198   1          // Заполняем структуру пакета
+ 199   1          parsedPacket->rcv_address = buffer[0];
+ 200   1          parsedPacket->rcv_functionCode = buffer[1];
+ 201   1          parsedPacket->rcv_dataLength = buffer[2]; 
+ 202   1          for (m = 0; m < parsedPacket->rcv_dataLength; m++) {
+ 203   2              parsedPacket->rcv_data[m] = buffer[3 + m];
+ 204   2          }
+ 205   1           return 1;
+ 206   1         
+ 207   1      }
  208          
+ 209          
+ 210          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1139    ----
+   CODE SIZE        =   1152    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =    118      57
+   XDATA SIZE       =     80      57
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =      2    ----
