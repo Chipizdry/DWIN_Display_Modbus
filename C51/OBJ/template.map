@@ -1,4 +1,4 @@
-LX51 LINKER/LOCATER V4.66.30.0                                                          12/31/2024  19:48:56  PAGE 1
+LX51 LINKER/LOCATER V4.66.30.0                                                          01/02/2025  13:51:50  PAGE 1
 
 
 LX51 LINKER/LOCATER V4.66.30.0, INVOKED BY:
@@ -67,7 +67,7 @@ INPUT MODULES INCLUDED:
   C:\PROGRAM FILES (X86)\KEIL\C51\LIB\C51L.LIB (?C?LNEG)
          COMMENT TYPE 1: A51 / ASM51 Assembler
   C:\PROGRAM FILES (X86)\KEIL\C51\LIB\C51L.LIB (?C?ULCMP)
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 2
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 2
 
 
          COMMENT TYPE 1: A51 / ASM51 Assembler
@@ -135,7 +135,7 @@ START     STOP      LENGTH    ALIGN  RELOC    MEMORY CLASS   SEGMENT NAME
 000908H   000D8AH   000483H   BYTE   UNIT     CODE           ?PR?PRINTF?PRINTF
 000D8BH   0010F8H   00036EH   BYTE   UNIT     CODE           ?PR?MAIN?MAIN
 0010F9H   00129BH   0001A3H   BYTE   UNIT     CODE           ?PR?_PARSEMODBUSPACKET?UART2
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 3
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 3
 
 
 00129CH   0013B8H   00011DH   BYTE   UNIT     CODE           ?PR?_SYS_WRITE_VP?SYS
@@ -203,7 +203,7 @@ SYS_INIT/SYS                  ----- -----  ----- -----  ----- -----  ----- -----
   +--> SYS_CPU_INIT/SYS
   +--> SYS_TIMER2_INIT/SYS
 
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 4
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 4
 
 
 SYS_CPU_INIT/SYS              ----- -----  ----- -----  ----- -----  ----- -----
@@ -271,7 +271,7 @@ PUBLIC SYMBOLS OF MODULE:  ..\OBJ\template (STARTUP_M5)
       0100022FH   CODE     ---       ?C?FPRESULT
       01000243H   CODE     ---       ?C?FPRESULT2
       01000262H   CODE     ---       ?C?FPROUND
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 5
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 5
 
 
       010003A7H   CODE     ---       ?C?FPSUB
@@ -339,7 +339,7 @@ PUBLIC SYMBOLS OF MODULE:  ..\OBJ\template (STARTUP_M5)
 *SFR* 000000FCH   DATA     BYTE      DATA1
 *SFR* 000000FBH   DATA     BYTE      DATA2
 *SFR* 000000FAH   DATA     BYTE      DATA3
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 6
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 6
 
 
       0000000FH   IDATA    WORD      data_len
@@ -407,7 +407,7 @@ PUBLIC SYMBOLS OF MODULE:  ..\OBJ\template (STARTUP_M5)
 *SFR* 00000098H   DATA     BYTE      SCON0
 *SFR* 0000009BH   DATA     BYTE      SCON1
 *SFR* 00000097H   DATA     BYTE      SCON2R
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 7
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 7
 
 
 *SFR* 00000096H   DATA     BYTE      SCON2T
@@ -475,7 +475,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       000000A8H   SFRSYM    DATA     BYTE      IEN0
       000000BDH   SFRSYM    DATA     BYTE      P2MDOUT
       000000B8H   SFRSYM    DATA     BYTE      IEN1
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 8
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 8
 
 
       000000BEH   SFRSYM    DATA     BYTE      P3MDOUT
@@ -543,7 +543,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       000000D0H   SFRSYM    DATA     BIT       P
       0000008AH   SFRSYM    DATA     BYTE      TL0
       0000008BH   SFRSYM    DATA     BYTE      TL1
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 9
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 9
 
 
       000000CCH   SFRSYM    DATA     BYTE      TL2
@@ -611,7 +611,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       0200800EH   SYMBOL    XDATA    WORD      len
       02008010H   SYMBOL    XDATA    WORD      i
       02008012H   SYMBOL    XDATA    ---       buff
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 10
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 10
 
 
       02008052H   SYMBOL    XDATA    WORD      recv_len
@@ -679,7 +679,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       010010A6H   LINE      CODE     ---       #204
       010010ABH   LINE      CODE     ---       #205
       010010AFH   LINE      CODE     ---       #206
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 11
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 11
 
 
       010010B9H   LINE      CODE     ---       #207
@@ -747,7 +747,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       000000D9H   SFRSYM    DATA     BYTE      BODE2_DIV_H
       000000AEH   SFRSYM    DATA     BYTE      BODE3_DIV_H
       00000096H   SFRSYM    DATA     BYTE      SCON2T
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 12
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 12
 
 
       000000A7H   SFRSYM    DATA     BYTE      SCON3T
@@ -815,7 +815,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       000000FEH   SFRSYM    DATA     BYTE      EXADR
       000000D0H.5 SFRSYM    DATA     BIT       F0
       000000D0H.1 SFRSYM    DATA     BIT       F1
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 13
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 13
 
 
       000000D0H   SFRSYM    DATA     BYTE      PSW
@@ -883,7 +883,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       02008094H   SYMBOL    XDATA    WORD      addr
       02008096H   SYMBOL    XDATA    ---       buf
       02008099H   SYMBOL    XDATA    WORD      len
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 14
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 14
 
 
       010012A8H   BLOCK     CODE     NEAR LAB  LVL=1
@@ -951,7 +951,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       020080B5H   PUBLIC    XDATA    BYTE      uart2_step
       020080B4H   PUBLIC    XDATA    BYTE      rcv_complete
       02008082H   PUBLIC    XDATA    BYTE      ?_parseModbusPacket?BYTE
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 15
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 15
 
 
       010010F9H   PUBLIC    CODE     ---       _parseModbusPacket
@@ -1019,7 +1019,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       000000A9H   SFRSYM    DATA     BYTE      IP0
       000000A8H.1 SFRSYM    DATA     BIT       ET0
       000000B9H   SFRSYM    DATA     BYTE      IP1
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 16
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 16
 
 
       000000A8H.3 SFRSYM    DATA     BIT       ET1
@@ -1087,7 +1087,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       0100004DH   LINE      CODE     ---       #27
       01000053H   LINE      CODE     ---       #30
       01000061H   LINE      CODE     ---       #32
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 17
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 17
 
 
       01000061H   LINE      CODE     ---       #35
@@ -1155,7 +1155,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       010017F0H   LINE      CODE     ---       #108
       010017F3H   LINE      CODE     ---       #109
       010017F5H   LINE      CODE     ---       #110
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 18
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 18
 
 
       01001801H   LINE      CODE     ---       #112
@@ -1223,7 +1223,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
       010011C5H   LINE      CODE     ---       #199
       010011DBH   LINE      CODE     ---       #200
       010011DEH   LINE      CODE     ---       #201
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 19
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 19
 
 
       010011DEH   LINE      CODE     ---       #204
@@ -1291,7 +1291,7 @@ SYMBOL TABLE OF MODULE:  ..\OBJ\template (STARTUP_M5)
 
       ---         MODULE    ---      ---       ?C?CLDOPTR
       01000721H   PUBLIC    CODE     ---       ?C?CLDOPTR
-LX51 LINKER/LOCATER V4.66.30.0                                                        12/31/2024  19:48:56  PAGE 20
+LX51 LINKER/LOCATER V4.66.30.0                                                        01/02/2025  13:51:50  PAGE 20
 
 
 
