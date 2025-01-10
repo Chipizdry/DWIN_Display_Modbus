@@ -6,7 +6,7 @@ volatile u8 modbus_addresses[5] = {1, 2, 3, 4, 5}; // Адреса устрой�
 volatile u16 start_reg = 0x0001;              // Начальный регистр
 volatile u16 num_reg = 4;                    // Количество регистров
 volatile u8 current_dev = 0;                    // Текущее устройство для опроса
-
+volatile u32 rcv_timer=0;
 xdata volatile	u16 current_device=0;          
 
 
@@ -21,9 +21,11 @@ idata u16 data_len=0;
 void uart2_isr() interrupt 4 {
     u8 res;
 
+	
+	
     if (RI0) {  // Проверяем флаг приема данных
         RI0 = 0;  // Сбрасываем флаг приема
-
+         rcv_timer=sys_tick;
         res = SBUF0;  // Читаем принятый байт данных из регистра
 
         // Если пакет уже обработан, игнорируем дальнейшие данные
@@ -35,6 +37,14 @@ void uart2_isr() interrupt 4 {
         if (uart2_rx_sta < UART2_PACKET_MAX_LEN) {
             uart2_buf[uart2_rx_sta] = res;
 					  uart2_rx_sta++;
+					
+					
+					 // Проверяем второй байт (opCode) на наличие ошибки
+            if (uart2_rx_sta == 2) {
+                if (uart2_buf[1] & 0x80) { // Если старший бит установлен, это код ошибки
+                    data_len = 5; // Устанавливаем длину пакета ошибки
+                }
+            }
         } else {
             uart2_rx_sta = 0;  // Если буфер переполнен, сбрасываем
             return;
@@ -47,7 +57,6 @@ void uart2_isr() interrupt 4 {
 				
 			if(uart2_step==data_len)	{  
             uart2_rx_sta |= UART2_PACKET_OK;  // Устанавливаем флаг пакета
-				  rcv_complete=1;
 					uart2_step =0;
         }
     }
@@ -178,15 +187,17 @@ void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg) {
 	  u16 receivedCRC;
 	  u16 calculatedCRC; 
 	  unsigned int m;  
-		 u16 receive_adr;
-		 u16 receive_cmd;
-		 receive_adr=	buffer[0];	
-	   receive_cmd=	buffer[1];	
-			sys_write_vp(0x2065, &receive_adr, 1);
-		  sys_write_vp(0x2067, &receive_cmd, 1);
+		unsigned int l;
+		u16 receive_adr;
+		u16 receive_cmd;
+		receive_adr=	buffer[0];	
+	  receive_cmd=	buffer[1];	
+		sys_write_vp(0x2065, &receive_adr, 1);
+		sys_write_vp(0x2067, &receive_cmd, 1);
 		
     if (length < 4) {
         // Минимальная длина пакета: адрес (1 байт) + функция (1 байт) + CRC (2 байта)
+			 for(l=0; l<UART2_PACKET_MAX_LEN;l++) {buffer[l]=0;}
         return 99 ;
     }
 
@@ -197,6 +208,7 @@ void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg) {
     // Вычисляем CRC для проверки
     calculatedCRC = calculate_crc(buffer, length - 2);
     if (receivedCRC != calculatedCRC) {
+			 for(l=0; l<UART2_PACKET_MAX_LEN;l++) {buffer[l]=0;}
         return 98 ; // Ошибка CRC
     }
 
@@ -207,6 +219,7 @@ void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg) {
     for (m = 0; m < parsedPacket->rcv_dataLength; m++) {
         parsedPacket->rcv_data[m] = buffer[3 + m];
     }
+		 for(l=0; l<UART2_PACKET_MAX_LEN;l++) {buffer[l]=0;}
      return 1;
    
 }
