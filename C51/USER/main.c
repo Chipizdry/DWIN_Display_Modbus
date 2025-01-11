@@ -72,11 +72,9 @@ idata  ModbusRequest request[6] = {
 u16 receive_cmd=0;
 xdata u16 receive_adr=0;
 
- xdata u16 result=0;	
-	sys_init();//System initialization
-	
+     xdata u16 result=0;	
+     sys_init();//System initialization
 	   uart2_init(9600);//Initialize serial port 2
-	
 		 current_device = 0;
 		 polling_state=0;
 	while(1){   
@@ -91,8 +89,7 @@ xdata u16 receive_adr=0;
 		{
 				
 			len = uart2_rx_sta&UART2_PACKET_LEN;
-			
-			
+				
 		  sys_write_vp(0x2069, (u16*)&len, 2);
 	
 			recv_len = 0;
@@ -107,8 +104,7 @@ xdata u16 receive_adr=0;
 				buff[i]=0;
 			}
 			
-			result=parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket);
-			
+			result=parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket);		
 			 sys_write_vp(0x2071, &result, 1);
 			 if (result==1) {   
 						 sys_write_vp(0x2096, "OK    \n", 4);
@@ -135,7 +131,13 @@ xdata u16 receive_adr=0;
 									
 
                  if (receivedPacket.rcv_dataLength >= 2) {
-                        // Извлекаем данные (первый регистр)
+                      
+									  // Извлекаем данные (первый регистр)
+                        rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
+                        if (rawValue & 0x8000) { // Проверяем знак числа
+                            rawValue = rawValue - 65536; // Отрицательное значение
+                        }
+                      
                        		
                        } else {
                       
@@ -149,6 +151,8 @@ xdata u16 receive_adr=0;
 			 
 			 
 			 }
+			  if (result==99) {sys_write_vp(0x2096, "Lenght\n", 4);}  
+				
 			 else{ sys_write_vp(0x2096, "ERROR\n", 4); }
 			
 			
@@ -175,16 +179,14 @@ if (polling_state==0) {
 					
 		sys_delay_ms(5);
 		temp_request = request[current_device];
-		modbus_requests((ModbusRequest*)&temp_request);
 		sys_write_vp(0x2000,(u8*)&current_device,1);
-				
- 
     command_value = temp_request.command; // Присваивание значения
     sys_write_vp(0x2001, &temp_request.command, 1); // Запись значения команды
 		sys_write_vp(0x2002, &temp_request.start_register, 1); // Запись первого регистра
     data_len=(temp_request.num_registers * 2)+5;	
 		sys_write_vp(0x2003,(u16*)&data_len, 2);	
     sys_write_vp(0x2004, &temp_request.address, 1);
+		modbus_requests((ModbusRequest*)&temp_request);
 			polling_state=1;
 	    polling_timer=200000; 
 			rcv_timer=sys_tick;
@@ -209,7 +211,7 @@ if (polling_state==0) {
          if (polling_timer ==0) {
             // Логируем таймаут (опционально)
             sys_write_vp(0x2042, "Timeout         \n", 9);
-					 
+		 
 					 	for(i=0;i<48;i++)
 						{
 							buff[i]=0;

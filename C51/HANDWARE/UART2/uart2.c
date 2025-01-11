@@ -20,13 +20,11 @@ idata u16 data_len=0;
 
 void uart2_isr() interrupt 4 {
     u8 res;
-
-	
 	
     if (RI0) {  // Проверяем флаг приема данных
         RI0 = 0;  // Сбрасываем флаг приема
          rcv_timer=sys_tick;
-        res = SBUF0;  // Читаем принятый байт данных из регистра
+         res = SBUF0;  // Читаем принятый байт данных из регистра
 
         // Если пакет уже обработан, игнорируем дальнейшие данные
         if (uart2_rx_sta & UART2_PACKET_OK) {
@@ -157,29 +155,6 @@ u16 calculate_crc(unsigned char *buffer, unsigned char length) {
     temp &= 0xFFFF;
 
     return temp;
-}
-
-
-// Функция формирования и отправки Modbus-запроса
-void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg) {
-    u8 request[8];
-    u16 crc;
-
-    // Формируем запрос Modbus
-    request[0] = dev_addr;                      // Адрес устройства
-    request[1] = dev_comd;               // Код функции 
-    request[2] = (start_reg >> 8) & 0xFF; // Старший байт начального регистра
-    request[3] = start_reg & 0xFF;        // Младший байт начального регистра
-    request[4] = (num_reg >> 8) & 0xFF;  // Старший байт количества регистров
-    request[5] = num_reg & 0xFF;         // Младший байт количества регистров
-
-    // Вычисляем CRC
-    crc = calculate_crc(request, 6);
-    request[6] = crc & 0xFF;                   // Младший байт CRC
-    request[7] = (crc >> 8) & 0xFF;            // Старший байт CRC
-
-    // Отправляем запрос через UART
-    u2_send_bytes(request, 8);
 }
 
 

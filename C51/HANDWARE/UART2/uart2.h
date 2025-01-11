@@ -28,7 +28,6 @@ extern  volatile u16 num_reg;                    // Количество рег�
 void uart2_init(u32 baud);
 void u2_send_byte(u8 byte);
 void u2_send_bytes(u8 *bytes,u16 len);
-void modbus_request(u8 dev_addr,u8 dev_comd, u16 start_reg, u16 num_reg);
 u16 calculate_crc(unsigned char *buffer, unsigned char length);
 u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket);
 #endif
