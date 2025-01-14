@@ -19,30 +19,6 @@ extern u8  uart2_step;
 // Прототип функции
 void modbus_requests(ModbusRequest *requests);
 
-
-void modbus_requests(ModbusRequest *requests) {
-    u8 packet[8];
-    u16 crc;
-
-    // Формируем запрос Modbus
-    packet[0] = requests->address;                      // Адрес устройства
-    packet[1] = requests->command;                                  // Код функции (чтение регистров)
-    packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
-    packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
-    packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
-    packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
-
-    // Вычисляем CRC
-    crc = calculate_crc(packet, 6);
-    packet[7] = crc & 0xFF;                            // Младший байт CRC
-    packet[6] = (crc >> 8) & 0xFF;                     // Старший байт CRC
-    // Отправляем запрос через UART
-    u2_send_bytes(packet, 8);
-}
-
-
-
-
 void main(void)
 {   
 
@@ -68,7 +44,7 @@ idata  ModbusRequest request[6] = {
 	float temperature;
 	u16 rawValue;
   xdata ModbusPacket receivedPacket;
-	
+	u16 freq;
 u16 receive_cmd=0;
 xdata u16 receive_adr=0;
 
@@ -81,7 +57,7 @@ xdata u16 receive_adr=0;
 		
 		
 		
-	//	if(((sys_tick-rcv_timer)>=400000)&&(polling_state == 1)&&(rcv_complete)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
+		if(((sys_tick-rcv_timer)>=800000)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
 				
 					
 		
@@ -125,7 +101,7 @@ xdata u16 receive_adr=0;
                        } else {
                       
                         }
-                  //  break;
+                    break;
 												
 							 case 0x02:						
 									
@@ -133,27 +109,26 @@ xdata u16 receive_adr=0;
                  if (receivedPacket.rcv_dataLength >= 2) {
                       
 									  // Извлекаем данные (первый регистр)
-                        rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
-                        if (rawValue & 0x8000) { // Проверяем знак числа
-                            rawValue = rawValue - 65536; // Отрицательное значение
-                        }
-                      
-                       		
+                       freq = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
+									
+                        sys_write_vp(0x2007,(u16*)&freq,2);			
                        } else {
                       
                         }
-                  //  break;							 
+                    break;							 
 					 
-					   //  default: break;
+					    default:
+            break;
 			 }
 			 
 			 
 			 
 			 
-			 }
-			  if (result==99) {sys_write_vp(0x2096, "Lenght\n", 4);}  
-				
-			 else{ sys_write_vp(0x2096, "ERROR\n", 4); }
+			 }else if (result == 99) {
+						sys_write_vp(0x2096, "Lenght\n", 4);
+				} else {
+						sys_write_vp(0x2096, "ERROR\n", 4);
+				}
 			
 			
 		  	uart2_rx_sta = 0;
@@ -186,9 +161,11 @@ if (polling_state==0) {
     data_len=(temp_request.num_registers * 2)+5;	
 		sys_write_vp(0x2003,(u16*)&data_len, 2);	
     sys_write_vp(0x2004, &temp_request.address, 1);
+		polling_timer=200000; 
+		polling_state=1;
 		modbus_requests((ModbusRequest*)&temp_request);
-			polling_state=1;
-	    polling_timer=200000; 
+		//	polling_state=1;
+	   // polling_timer=200000; 
 			rcv_timer=sys_tick;
 	     }
 

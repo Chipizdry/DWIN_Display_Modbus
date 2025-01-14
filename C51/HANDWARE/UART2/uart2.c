@@ -23,6 +23,7 @@ void uart2_isr() interrupt 4 {
 	
     if (RI0) {  // Проверяем флаг приема данных
         RI0 = 0;  // Сбрасываем флаг приема
+			    
          rcv_timer=sys_tick;
          res = SBUF0;  // Читаем принятый байт данных из регистра
 
@@ -200,4 +201,23 @@ u16 calculate_crc(unsigned char *buffer, unsigned char length) {
 }
 
 
+void modbus_requests(ModbusRequest *requests) {
+    u8 packet[8];
+    u16 crc;
+
+    // Формируем запрос Modbus
+    packet[0] = requests->address;                      // Адрес устройства
+    packet[1] = requests->command;                                  // Код функции (чтение регистров)
+    packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
+    packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
+    packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
+    packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
+
+    // Вычисляем CRC
+    crc = calculate_crc(packet, 6);
+    packet[7] = crc & 0xFF;                            // Младший байт CRC
+    packet[6] = (crc >> 8) & 0xFF;                     // Старший байт CRC
+    // Отправляем запрос через UART
+    u2_send_bytes(packet, 8);
+}
 
