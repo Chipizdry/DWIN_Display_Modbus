@@ -39,13 +39,14 @@ idata  ModbusRequest request[6] = {
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
+	u16 send_reg[16]={0, };
   u16 recv_len;
 	idata u8 command_value; // Объявление переменной
 	float temperature;
 	u16 rawValue;
   xdata ModbusPacket receivedPacket;
 	u16 freq;
-u16 receive_cmd=0;
+  u16 receive_cmd=0;
 xdata u16 receive_adr=0;
 
      xdata u16 result=0;	
@@ -57,7 +58,7 @@ xdata u16 receive_adr=0;
 		
 		
 		
-		if(((sys_tick-rcv_timer)>=800000)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
+		if(((sys_tick-rcv_timer)>=300000)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
 				
 					
 		
@@ -126,7 +127,23 @@ xdata u16 receive_adr=0;
 			 
 			 }else if (result == 99) {
 						sys_write_vp(0x2096, "Lenght\n", 4);
-				} else {
+				  
+				}else if (result == 98) {
+						sys_write_vp(0x2096, "CRC   \n", 4);
+					
+					
+		  	uart2_rx_sta = 0;
+			  len=0;
+			 
+			 for(i=0;i<UART2_PACKET_MAX_LEN;i++)
+			{
+				uart2_buf[i]=0;
+			}
+			 
+			 
+			rcv_complete=1;
+				  
+				}else {
 						sys_write_vp(0x2096, "ERROR\n", 4);
 				}
 			
@@ -164,8 +181,7 @@ if (polling_state==0) {
 		polling_timer=200000; 
 		polling_state=1;
 		modbus_requests((ModbusRequest*)&temp_request);
-		//	polling_state=1;
-	   // polling_timer=200000; 
+					
 			rcv_timer=sys_tick;
 	     }
 
@@ -183,6 +199,7 @@ if (polling_state==0) {
             polling_state = 0;  // Возврат в состояние отправки
 					  rcv_complete=0;
 					  polling_timer=200000;
+					  rcv_timer=sys_tick;
         }
         // Если время ожидания истекло
          if (polling_timer ==0) {
@@ -197,6 +214,7 @@ if (polling_state==0) {
             current_device=current_device+1;
             polling_state = 0;  // Возврат в состояние отправки
 					  rcv_complete=0;
+						rcv_timer=sys_tick;
         }			
     }	
 	}

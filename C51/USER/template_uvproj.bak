@@ -387,11 +387,6 @@
               <FileType>1</FileType>
               <FilePath>..\HANDWARE\UART2\uart2.c</FilePath>
             </File>
-            <File>
-              <FileName>uart5.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\uart5.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

@@ -30,6 +30,7 @@ void u2_send_byte(u8 byte);
 void u2_send_bytes(u8 *bytes,u16 len);
 u16 calculate_crc(unsigned char *buffer, unsigned char length);
 u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket);
+void setBitInUint16(u16*reg, u8 bitPos, bool value);
 #endif
 
 

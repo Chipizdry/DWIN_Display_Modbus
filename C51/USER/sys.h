@@ -9,6 +9,7 @@ typedef unsigned long   u32;
 typedef signed char     s8;
 typedef signed short    s16;
 typedef signed long     s32;
+typedef unsigned char bool;
 
  	typedef struct {
 						u16 address;

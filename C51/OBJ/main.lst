@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   MAIN                                                              01/14/2025 13:19:18 PAGE 1   
+C51 COMPILER V9.53.0.0   MAIN                                                              01/16/2025 15:40:09 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MAIN
@@ -50,194 +50,214 @@ line level    source
   39   1        u16 len;
   40   1        u16 i;
   41   1        u8 buff[48]={0, };
-  42   1        u16 recv_len;
-  43   1        idata u8 command_value; // Объявление переменной
-  44   1        float temperature;
-  45   1        u16 rawValue;
-  46   1        xdata ModbusPacket receivedPacket;
-  47   1        u16 freq;
-  48   1      u16 receive_cmd=0;
-  49   1      xdata u16 receive_adr=0;
-  50   1      
-  51   1           xdata u16 result=0;  
-  52   1           sys_init();//System initialization
-  53   1           uart2_init(9600);//Initialize serial port 2
-C51 COMPILER V9.53.0.0   MAIN                                                              01/14/2025 13:19:18 PAGE 2   
+  42   1        u16 send_reg[16]={0, };
+  43   1        u16 recv_len;
+  44   1        idata u8 command_value; // Объявление переменной
+  45   1        float temperature;
+  46   1        u16 rawValue;
+  47   1        xdata ModbusPacket receivedPacket;
+  48   1        u16 freq;
+  49   1        u16 receive_cmd=0;
+  50   1      xdata u16 receive_adr=0;
+  51   1      
+  52   1           xdata u16 result=0;  
+  53   1           sys_init();//System initialization
+C51 COMPILER V9.53.0.0   MAIN                                                              01/16/2025 15:40:09 PAGE 2   
 
-  54   1           current_device = 0;
-  55   1           polling_state=0;
-  56   1        while(1){   
-  57   2          
+  54   1           uart2_init(9600);//Initialize serial port 2
+  55   1           current_device = 0;
+  56   1           polling_state=0;
+  57   1        while(1){   
   58   2          
   59   2          
-  60   2          if(((sys_tick-rcv_timer)>=800000)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK
+  60   2          
+  61   2          if(((sys_tick-rcv_timer)>=300000)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK
              -; }; // Таймаут прерывания приёма данных 
-  61   2              
-  62   2                
-  63   2          
-  64   2          if(uart2_rx_sta & UART2_PACKET_OK)
-  65   2          {
-  66   3              
-  67   3            len = uart2_rx_sta&UART2_PACKET_LEN;
-  68   3              
-  69   3            sys_write_vp(0x2069, (u16*)&len, 2);
-*** WARNING C182 IN LINE 69 OF main.c: pointer to different objects
-  70   3        
-  71   3            recv_len = 0;
-  72   3            for(i=0;i<len;i++)
-  73   3            {
-  74   4              recv_len += sprintf(buff+recv_len,"%02X ",(u16)uart2_buf[i]);
-  75   4            }
-  76   3            sys_write_vp(0x2010,"                                ",16);
-  77   3            sys_write_vp(0x2010,buff,recv_len/2+2);
-  78   3            for(i=0;i<48;i++)
-  79   3            {
-  80   4              buff[i]=0;
-  81   4            }
-  82   3            
-  83   3            result=parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket);    
-  84   3             sys_write_vp(0x2071, &result, 1);
-*** WARNING C182 IN LINE 84 OF main.c: pointer to different objects
-  85   3             if (result==1) {   
-  86   4                   sys_write_vp(0x2096, "OK    \n", 4);
-  87   4             
-  88   4             switch (receivedPacket.rcv_address) {
-  89   5      
-  90   5                 case 0x01: 
-  91   5                   
-  92   5                  // Проверяем длину данных
-  93   5                          if (receivedPacket.rcv_dataLength >= 2) {
-  94   6                              // Извлекаем данные (первый регистр)
-  95   6                              rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
-  96   6                              if (rawValue & 0x8000) { // Проверяем знак числа
-  97   7                                  rawValue = rawValue - 65536; // Отрицательное значение
-  98   7                              }
-  99   6                             temperature = rawValue / 10.0; // Масштабирование
- 100   6                             sys_write_vp(0x2005,(u8*)&temperature,2);    
- 101   6                             } else {
- 102   6                            
- 103   6                              }
- 104   5                          break;
- 105   5                              
- 106   5                     case 0x02:           
- 107   5                        
- 108   5      
- 109   5                       if (receivedPacket.rcv_dataLength >= 2) {
- 110   6                            
- 111   6                          // Извлекаем данные (первый регистр)
- 112   6                             freq = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
-C51 COMPILER V9.53.0.0   MAIN                                                              01/14/2025 13:19:18 PAGE 3   
+  62   2              
+  63   2                
+  64   2          
+  65   2          if(uart2_rx_sta & UART2_PACKET_OK)
+  66   2          {
+  67   3              
+  68   3            len = uart2_rx_sta&UART2_PACKET_LEN;
+  69   3              
+  70   3            sys_write_vp(0x2069, (u16*)&len, 2);
+*** WARNING C182 IN LINE 70 OF main.c: pointer to different objects
+  71   3        
+  72   3            recv_len = 0;
+  73   3            for(i=0;i<len;i++)
+  74   3            {
+  75   4              recv_len += sprintf(buff+recv_len,"%02X ",(u16)uart2_buf[i]);
+  76   4            }
+  77   3            sys_write_vp(0x2010,"                                ",16);
+  78   3            sys_write_vp(0x2010,buff,recv_len/2+2);
+  79   3            for(i=0;i<48;i++)
+  80   3            {
+  81   4              buff[i]=0;
+  82   4            }
+  83   3            
+  84   3            result=parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket);    
+  85   3             sys_write_vp(0x2071, &result, 1);
+*** WARNING C182 IN LINE 85 OF main.c: pointer to different objects
+  86   3             if (result==1) {   
+  87   4                   sys_write_vp(0x2096, "OK    \n", 4);
+  88   4             
+  89   4             switch (receivedPacket.rcv_address) {
+  90   5      
+  91   5                 case 0x01: 
+  92   5                   
+  93   5                  // Проверяем длину данных
+  94   5                          if (receivedPacket.rcv_dataLength >= 2) {
+  95   6                              // Извлекаем данные (первый регистр)
+  96   6                              rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
+  97   6                              if (rawValue & 0x8000) { // Проверяем знак числа
+  98   7                                  rawValue = rawValue - 65536; // Отрицательное значение
+  99   7                              }
+ 100   6                             temperature = rawValue / 10.0; // Масштабирование
+ 101   6                             sys_write_vp(0x2005,(u8*)&temperature,2);    
+ 102   6                             } else {
+ 103   6                            
+ 104   6                              }
+ 105   5                          break;
+ 106   5                              
+ 107   5                     case 0x02:           
+ 108   5                        
+ 109   5      
+ 110   5                       if (receivedPacket.rcv_dataLength >= 2) {
+ 111   6                            
+ 112   6                          // Извлекаем данные (первый регистр)
+C51 COMPILER V9.53.0.0   MAIN                                                              01/16/2025 15:40:09 PAGE 3   
 
- 113   6                        
- 114   6                              sys_write_vp(0x2007,(u16*)&freq,2);     
-*** WARNING C182 IN LINE 114 OF main.c: pointer to different objects
- 115   6                             } else {
- 116   6                            
- 117   6                              }
- 118   5                          break;               
- 119   5                 
- 120   5                    default:
- 121   5                  break;
- 122   5             }
- 123   4             
+ 113   6                             freq = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
+ 114   6                        
+ 115   6                              sys_write_vp(0x2007,(u16*)&freq,2);     
+*** WARNING C182 IN LINE 115 OF main.c: pointer to different objects
+ 116   6                             } else {
+ 117   6                            
+ 118   6                              }
+ 119   5                          break;               
+ 120   5                 
+ 121   5                    default:
+ 122   5                  break;
+ 123   5             }
  124   4             
  125   4             
  126   4             
- 127   4             }else if (result == 99) {
- 128   4                  sys_write_vp(0x2096, "Lenght\n", 4);
- 129   4              } else {
- 130   4                  sys_write_vp(0x2096, "ERROR\n", 4);
- 131   4              }
- 132   3            
- 133   3            
- 134   3              uart2_rx_sta = 0;
- 135   3              len=0;
- 136   3             
- 137   3             for(i=0;i<UART2_PACKET_MAX_LEN;i++)
- 138   3            {
- 139   4              uart2_buf[i]=0;
- 140   4            }
- 141   3             
- 142   3             
- 143   3            rcv_complete=1;
- 144   3          }
- 145   2         
- 146   2          
- 147   2        
- 148   2          
- 149   2      if (polling_state==0) {
- 150   3             if (current_device >= 6) {
- 151   4                 current_device = 0; // Сбрасываем индекс, если он выходит за г�
+ 127   4             
+ 128   4             }else if (result == 99) {
+ 129   4                  sys_write_vp(0x2096, "Lenght\n", 4);
+ 130   4                
+ 131   4              }else if (result == 98) {
+ 132   4                  sys_write_vp(0x2096, "CRC   \n", 4);
+ 133   4                
+ 134   4                
+ 135   4              uart2_rx_sta = 0;
+ 136   4              len=0;
+ 137   4             
+ 138   4             for(i=0;i<UART2_PACKET_MAX_LEN;i++)
+ 139   4            {
+ 140   5              uart2_buf[i]=0;
+ 141   5            }
+ 142   4             
+ 143   4             
+ 144   4            rcv_complete=1;
+ 145   4                
+ 146   4              }else {
+ 147   4                  sys_write_vp(0x2096, "ERROR\n", 4);
+ 148   4              }
+ 149   3            
+ 150   3            
+ 151   3              uart2_rx_sta = 0;
+ 152   3              len=0;
+ 153   3             
+ 154   3             for(i=0;i<UART2_PACKET_MAX_LEN;i++)
+ 155   3            {
+ 156   4              uart2_buf[i]=0;
+ 157   4            }
+ 158   3             
+ 159   3             
+ 160   3            rcv_complete=1;
+ 161   3          }
+ 162   2         
+ 163   2          
+ 164   2        
+ 165   2          
+ 166   2      if (polling_state==0) {
+ 167   3             if (current_device >= 6) {
+ 168   4                 current_device = 0; // Сбрасываем индекс, если он выходит за г�
              -�аницы
- 152   4                }
- 153   3        
- 154   3                
- 155   3          sys_delay_ms(5);
- 156   3          temp_request = request[current_device];
- 157   3          sys_write_vp(0x2000,(u8*)&current_device,1);
- 158   3          command_value = temp_request.command; // Присваивание значения
- 159   3          sys_write_vp(0x2001, &temp_request.command, 1); // Запись значения команды
-*** WARNING C182 IN LINE 159 OF main.c: pointer to different objects
- 160   3          sys_write_vp(0x2002, &temp_request.start_register, 1); // Запись первого регистра
-*** WARNING C182 IN LINE 160 OF main.c: pointer to different objects
- 161   3          data_len=(temp_request.num_registers * 2)+5;  
- 162   3          sys_write_vp(0x2003,(u16*)&data_len, 2);  
-*** WARNING C182 IN LINE 162 OF main.c: pointer to different objects
- 163   3          sys_write_vp(0x2004, &temp_request.address, 1);
-*** WARNING C182 IN LINE 163 OF main.c: pointer to different objects
- 164   3          polling_timer=200000; 
- 165   3          polling_state=1;
- 166   3          modbus_requests((ModbusRequest*)&temp_request);
- 167   3          //  polling_state=1;
- 168   3           // polling_timer=200000; 
-C51 COMPILER V9.53.0.0   MAIN                                                              01/14/2025 13:19:18 PAGE 4   
+ 169   4                }
+ 170   3        
+ 171   3                
+ 172   3          sys_delay_ms(5);
+C51 COMPILER V9.53.0.0   MAIN                                                              01/16/2025 15:40:09 PAGE 4   
 
- 169   3            rcv_timer=sys_tick;
- 170   3             }
- 171   2      
- 172   2            polling_timer--;
- 173   2          
- 174   2          
- 175   2          // Состояние 1: Ожидание ответа
- 176   2          if (polling_state == 1) {
- 177   3              // Если получен ответ
- 178   3            
- 179   3              if (rcv_complete==1) {
- 180   4                  sys_write_vp(0x2042, "Received        \n", 9);      
- 181   4                  // Переход к следующему устройству
- 182   4                  current_device=current_device+1;
- 183   4                  polling_state = 0;  // Возврат в состояние отправки
- 184   4                  rcv_complete=0;
- 185   4                  polling_timer=200000;
- 186   4              }
- 187   3              // Если время ожидания истекло
- 188   3               if (polling_timer ==0) {
- 189   4                  // Логируем таймаут (опционально)
- 190   4                  sys_write_vp(0x2042, "Timeout         \n", 9);
- 191   4           
- 192   4                  for(i=0;i<48;i++)
- 193   4                  {
- 194   5                    buff[i]=0;
- 195   5                  }
- 196   4                  // Переход к следующему устройству
- 197   4                  current_device=current_device+1;
- 198   4                  polling_state = 0;  // Возврат в состояние отправки
- 199   4                  rcv_complete=0;
- 200   4              }     
- 201   3          } 
- 202   2        }
- 203   1          
- 204   1      }
- 205          
- 206          
- 207          
- 208          
+ 173   3          temp_request = request[current_device];
+ 174   3          sys_write_vp(0x2000,(u8*)&current_device,1);
+ 175   3          command_value = temp_request.command; // Присваивание значения
+ 176   3          sys_write_vp(0x2001, &temp_request.command, 1); // Запись значения команды
+*** WARNING C182 IN LINE 176 OF main.c: pointer to different objects
+ 177   3          sys_write_vp(0x2002, &temp_request.start_register, 1); // Запись первого регистра
+*** WARNING C182 IN LINE 177 OF main.c: pointer to different objects
+ 178   3          data_len=(temp_request.num_registers * 2)+5;  
+ 179   3          sys_write_vp(0x2003,(u16*)&data_len, 2);  
+*** WARNING C182 IN LINE 179 OF main.c: pointer to different objects
+ 180   3          sys_write_vp(0x2004, &temp_request.address, 1);
+*** WARNING C182 IN LINE 180 OF main.c: pointer to different objects
+ 181   3          polling_timer=200000; 
+ 182   3          polling_state=1;
+ 183   3          modbus_requests((ModbusRequest*)&temp_request);
+ 184   3                
+ 185   3            rcv_timer=sys_tick;
+ 186   3             }
+ 187   2      
+ 188   2            polling_timer--;
+ 189   2          
+ 190   2          
+ 191   2          // Состояние 1: Ожидание ответа
+ 192   2          if (polling_state == 1) {
+ 193   3              // Если получен ответ
+ 194   3            
+ 195   3              if (rcv_complete==1) {
+ 196   4                  sys_write_vp(0x2042, "Received        \n", 9);      
+ 197   4                  // Переход к следующему устройству
+ 198   4                  current_device=current_device+1;
+ 199   4                  polling_state = 0;  // Возврат в состояние отправки
+ 200   4                  rcv_complete=0;
+ 201   4                  polling_timer=200000;
+ 202   4                  rcv_timer=sys_tick;
+ 203   4              }
+ 204   3              // Если время ожидания истекло
+ 205   3               if (polling_timer ==0) {
+ 206   4                  // Логируем таймаут (опционально)
+ 207   4                  sys_write_vp(0x2042, "Timeout         \n", 9);
+ 208   4           
+ 209   4                  for(i=0;i<48;i++)
+ 210   4                  {
+ 211   5                    buff[i]=0;
+ 212   5                  }
+ 213   4                  // Переход к следующему устройству
+ 214   4                  current_device=current_device+1;
+ 215   4                  polling_state = 0;  // Возврат в состояние отправки
+ 216   4                  rcv_complete=0;
+ 217   4                  rcv_timer=sys_tick;
+ 218   4              }     
+ 219   3          } 
+ 220   2        }
+ 221   1          
+ 222   1      }
+ 223          
+ 224          
+ 225          
+ 226          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1328    ----
-   CONSTANT SIZE    =    202    ----
-   XDATA SIZE       =   ----     151
+   CODE SIZE        =   1479    ----
+C51 COMPILER V9.53.0.0   MAIN                                                              01/16/2025 15:40:09 PAGE 5   
+
+   CONSTANT SIZE    =    242    ----
+   XDATA SIZE       =   ----     183
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----      57
