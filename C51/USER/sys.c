@@ -174,9 +174,7 @@ void sys_write_vp(u16 addr, u8* buf, u16 len)
 void sys_timer2_isr()	interrupt 5
 {
 	TF2=0; // Очистить бит флага прерывания Таймера 2
-	if(sys_tick<0xFFFFFFFF){
-	sys_tick++;}
-	if(sys_tick==0xFFFFFFFF){sys_tick=0;}
+	if(sys_tick) sys_tick--;
 	// обработка точной задержки
 	if(delay_tick)
 		delay_tick--;

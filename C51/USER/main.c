@@ -16,20 +16,19 @@ extern u8  uart2_step;
 
 
 
-// Прототип функции
-void modbus_requests(ModbusRequest *requests);
+
 
 void main(void)
 {   
 
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[6] = {
-    {0x2, 0x3, 0x0000, 0x4},   // Устройство 1
-    {0x4, 0x3, 0x0000, 0x2},   // Устройство 2
-    {0x3, 0x3, 0x0002, 0x2},   // Устройство 3
-    {0x1, 0x3, 0x0000, 0x2},   // Устройство 4
-    {0x5, 0x3, 0x00FD, 0x1},  // Устройство 5
-    {0x6, 0x3, 0x002F, 0x1}   // Устройство 6
+    {0x2, 0x3,  0x0000, 0x4},   // Устройство 1
+    {0x2, 0x10, 0x0001, 0x2},   // Устройство 2
+    {0x3, 0x3,  0x0002, 0x2},   // Устройство 3
+    {0x1, 0x3,  0x0000, 0x2},   // Устройство 4
+    {0x5, 0x3,  0x00FD, 0x1},  // Устройство 5
+    {0x6, 0x3,  0x002F, 0x1}   // Устройство 6
 };
 
  idata  ModbusRequest temp_request;
@@ -39,7 +38,7 @@ idata  ModbusRequest request[6] = {
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
-	u16 send_reg[16]={0, };
+ 	u16 send_reg[8]={0, };
   u16 recv_len;
 	idata u8 command_value; // Объявление переменной
 	float temperature;
@@ -54,14 +53,11 @@ xdata u16 receive_adr=0;
 	   uart2_init(9600);//Initialize serial port 2
 		 current_device = 0;
 		 polling_state=0;
+	   sys_tick=IDLE_TIME;
 	while(1){   
-		
-		
-		
-		if(((sys_tick-rcv_timer)>=300000)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
-				
+			
+		if((sys_tick=0)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
 					
-		
 		if(uart2_rx_sta & UART2_PACKET_OK)
 		{
 				
@@ -80,7 +76,7 @@ xdata u16 receive_adr=0;
 			{
 				buff[i]=0;
 			}
-			
+			sys_tick=IDLE_TIME;
 			result=parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket);		
 			 sys_write_vp(0x2071, &result, 1);
 			 if (result==1) {   
@@ -88,8 +84,7 @@ xdata u16 receive_adr=0;
 			 
 			 switch (receivedPacket.rcv_address) {
 
-           case 0x01:	
-						 
+           case 0x01:		 
 					  // Проверяем длину данных
                     if (receivedPacket.rcv_dataLength >= 2) {
                         // Извлекаем данные (первый регистр)
@@ -104,7 +99,7 @@ xdata u16 receive_adr=0;
                         }
                     break;
 												
-							 case 0x02:						
+						case 0x02:						
 									
 
                  if (receivedPacket.rcv_dataLength >= 2) {
@@ -114,7 +109,7 @@ xdata u16 receive_adr=0;
 									
                         sys_write_vp(0x2007,(u16*)&freq,2);			
                        } else {
-                      
+                         break;
                         }
                     break;							 
 					 
@@ -130,24 +125,11 @@ xdata u16 receive_adr=0;
 				  
 				}else if (result == 98) {
 						sys_write_vp(0x2096, "CRC   \n", 4);
-					
-					
-		  	uart2_rx_sta = 0;
-			  len=0;
-			 
-			 for(i=0;i<UART2_PACKET_MAX_LEN;i++)
-			{
-				uart2_buf[i]=0;
-			}
-			 
-			 
-			rcv_complete=1;
-				  
+
 				}else {
 						sys_write_vp(0x2096, "ERROR\n", 4);
 				}
-			
-			
+				
 		  	uart2_rx_sta = 0;
 			  len=0;
 			 
@@ -169,7 +151,7 @@ if (polling_state==0) {
           }
 	
 					
-		sys_delay_ms(5);
+		sys_delay_ms(10);
 		temp_request = request[current_device];
 		sys_write_vp(0x2000,(u8*)&current_device,1);
     command_value = temp_request.command; // Присваивание значения
@@ -180,9 +162,9 @@ if (polling_state==0) {
     sys_write_vp(0x2004, &temp_request.address, 1);
 		polling_timer=200000; 
 		polling_state=1;
-		modbus_requests((ModbusRequest*)&temp_request);
+		modbus_requests((ModbusRequest*)&temp_request,send_reg,8);
 					
-			rcv_timer=sys_tick;
+			sys_tick=IDLE_TIME;
 	     }
 
       polling_timer--;
@@ -199,7 +181,7 @@ if (polling_state==0) {
             polling_state = 0;  // Возврат в состояние отправки
 					  rcv_complete=0;
 					  polling_timer=200000;
-					  rcv_timer=sys_tick;
+					  sys_tick=IDLE_TIME;
         }
         // Если время ожидания истекло
          if (polling_timer ==0) {
@@ -214,7 +196,7 @@ if (polling_state==0) {
             current_device=current_device+1;
             polling_state = 0;  // Возврат в состояние отправки
 					  rcv_complete=0;
-						rcv_timer=sys_tick;
+						sys_tick=IDLE_TIME;
         }			
     }	
 	}

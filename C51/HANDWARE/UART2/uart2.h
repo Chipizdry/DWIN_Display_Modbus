@@ -9,7 +9,7 @@
 #define UART2_PACKET_LEN					0x7fff	//Length of packet
 #define UART2_PACKET_MAX_LEN			64			//Defines the maximum length of the serial port package, excluding '\n' or "\r\n" end tags
 
-
+#define IDLE_TIME 300000
 //Variable declaration
 extern xdata u16 uart2_rx_sta;
 extern xdata u8  uart2_buf[];
@@ -30,6 +30,7 @@ void u2_send_byte(u8 byte);
 void u2_send_bytes(u8 *bytes,u16 len);
 u16 calculate_crc(unsigned char *buffer, unsigned char length);
 u8 parseModbusPacket(u8 *buffer, u16 length, ModbusPacket *parsedPacket);
+void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len);
 void setBitInUint16(u16*reg, u8 bitPos, bool value);
 #endif
 

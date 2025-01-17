@@ -24,7 +24,7 @@ void uart2_isr() interrupt 4 {
     if (RI0) {  // Проверяем флаг приема данных
         RI0 = 0;  // Сбрасываем флаг приема
 			    
-         rcv_timer=sys_tick;
+         sys_tick=IDLE_TIME;
          res = SBUF0;  // Читаем принятый байт данных из регистра
 
         // Если пакет уже обработан, игнорируем дальнейшие данные
@@ -39,13 +39,14 @@ void uart2_isr() interrupt 4 {
 					
 					
 					 // Проверяем второй байт (opCode) на наличие ошибки
-            if (uart2_rx_sta == 2) {
-                if (uart2_buf[1] & 0x80) { // Если старший бит установлен, это код ошибки
+            if ((uart2_rx_sta == 2)&&(uart2_buf[1] & 0x80)){
+              // if (uart2_buf[1] & 0x80) { // Если старший бит установлен, это код ошибки
                     data_len = 5; // Устанавливаем длину пакета ошибки
-                }
+               // }
             }
         } else {
             uart2_rx_sta = 0;  // Если буфер переполнен, сбрасываем
+				  	
             return;
         }
 
@@ -191,34 +192,66 @@ u16 calculate_crc(unsigned char *buffer, unsigned char length) {
     // Заполняем структуру пакета
     parsedPacket->rcv_address = buffer[0];
     parsedPacket->rcv_functionCode = buffer[1];
+		
+		  if (parsedPacket->rcv_functionCode == 0x03) { // Чтение регистров
     parsedPacket->rcv_dataLength = buffer[2]; 
     for (m = 0; m < parsedPacket->rcv_dataLength; m++) {
         parsedPacket->rcv_data[m] = buffer[3 + m];
     }
 		 for(l=0; l<UART2_PACKET_MAX_LEN;l++) {buffer[l]=0;}
-     return 1;
+     return 1; }  
+			
+		 if(parsedPacket->rcv_functionCode == 0x10) { // Запись регистров
+		 
+		 
+		 return 1; }
    
 }
 
 
-void modbus_requests(ModbusRequest *requests) {
-    u8 packet[8];
+void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len) {
+    u8 packet[32];
     u16 crc;
-
+    u16 i;
+	  u8 len;     // Текущая длина пакета
+	  u8 byte_count;
     // Формируем запрос Modbus
     packet[0] = requests->address;                      // Адрес устройства
-    packet[1] = requests->command;                                  // Код функции (чтение регистров)
-    packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
-    packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
-    packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
-    packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
+    packet[1] = requests->command;                      // Код функции (чтение/запись  регистров)
+	
+	if (requests->command == 0x03) { // Чтение регистров
+        packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
+        packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
+        packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
+        packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
+        len = 6; // Длина данных для функции 3
+    } 
+  	
+		else if (requests->command == 0x10) { // Запись регистров
+        byte_count = data_len*2;
+
+        packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
+        packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
+        packet[4] = (data_len >> 8) & 0xFF;                 // Старший байт количества регистров
+        packet[5] = data_len & 0xFF;                        // Младший байт количества регистров
+        packet[6] = byte_count & 0xFF;                      // Количество байт данных
+
+        // Добавляем данные в пакет
+        for (i = 0; i < data_len; i++) {
+            packet[7 + (i * 2)] = (data_send[i] >> 8) & 0xFF;    // Старший байт данных
+            packet[8 + (i * 2)] = data_send[i] & 0xFF;           // Младший байт данных
+        }
+
+        len = 7 + byte_count; // Длина пакета для функции 16
+    }
 
     // Вычисляем CRC
-    crc = calculate_crc(packet, 6);
-    packet[7] = crc & 0xFF;                            // Младший байт CRC
-    packet[6] = (crc >> 8) & 0xFF;                     // Старший байт CRC
+    crc = calculate_crc(packet, len);
+    packet[len+1] = crc & 0xFF;                            // Младший байт CRC
+    packet[len] = (crc >> 8) & 0xFF;                     // Старший байт CRC
+		 len += 2; // Увеличиваем длину на размер CRC
     // Отправляем запрос через UART
-    u2_send_bytes(packet, 8);
+    u2_send_bytes(packet, len);
 }
 
 // Функция для установки значения переменной в определённый бит регистра
