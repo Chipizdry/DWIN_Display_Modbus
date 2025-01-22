@@ -39,10 +39,9 @@ void uart2_isr() interrupt 4 {
 					
 					
 					 // Проверяем второй байт (opCode) на наличие ошибки
-            if ((uart2_rx_sta == 2)&&(uart2_buf[1] & 0x80)){
-              // if (uart2_buf[1] & 0x80) { // Если старший бит установлен, это код ошибки
+            if ((uart2_rx_sta == 2)&&(uart2_buf[1] & 0x80)){   // Если старший бит установлен, это код ошибки
+           
                     data_len = 5; // Устанавливаем длину пакета ошибки
-               // }
             }
         } else {
             uart2_rx_sta = 0;  // Если буфер переполнен, сбрасываем
@@ -89,6 +88,20 @@ void uart2_init(u32 baud)
 		ES0 = 0;
 	#endif
 
+}
+
+
+void uart2_reset(u32 baud)
+{
+    // Деинициализация UART2
+    ES0 = 0;               // Отключение прерываний UART2
+    SCON0 = 0x00;          // Сброс регистра управления UART
+    SREL0H = 0x00;         // Сброс регистров скорости передачи
+    SREL0L = 0x00;
+    PCON &= ~0x80;         // Сброс SMOD
+    
+    // Повторная инициализация UART2
+    uart2_init(baud);
 }
 
 //Send a byte
@@ -225,8 +238,20 @@ void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len) {
         packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
         packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
         len = 6; // Длина данных для функции 3
+		   
     } 
   	
+		
+		if (requests->command == 0x06) { // Чтение регистров
+        packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
+        packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
+        packet[4] = (data_send[6] >> 8) & 0xFF;  // Старший байт количества регистров
+        packet[5] = data_send[7] & 0xFF;         // Младший байт количества регистров
+        len = 6; // Длина данных для функции 3
+		  
+    } 
+		
+		
 		else if (requests->command == 0x10) { // Запись регистров
         byte_count = data_len*2;
 
@@ -241,9 +266,13 @@ void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len) {
             packet[7 + (i * 2)] = (data_send[i] >> 8) & 0xFF;    // Старший байт данных
             packet[8 + (i * 2)] = data_send[i] & 0xFF;           // Младший байт данных
         }
-
+   
         len = 7 + byte_count; // Длина пакета для функции 16
     }
+		
+		
+		
+		
 
     // Вычисляем CRC
     crc = calculate_crc(packet, len);

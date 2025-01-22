@@ -13,7 +13,7 @@ extern u8  uart2_step;
 #define TEST_TXT		 "DGUS TEST TEXT\0\0"
 #define INT_TXT		 "INERRUPT \0\0"
 #define WHILE_TXT		 "WHILE___ \0\0"
-
+#define BOUDRATE 9600
 
 
 
@@ -23,22 +23,22 @@ void main(void)
 
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[6] = {
-    {0x2, 0x3,  0x0000, 0x4},   // Устройство 1
-    {0x2, 0x10, 0x0001, 0x2},   // Устройство 2
-    {0x3, 0x3,  0x0002, 0x2},   // Устройство 3
-    {0x1, 0x3,  0x0000, 0x2},   // Устройство 4
-    {0x5, 0x3,  0x00FD, 0x1},  // Устройство 5
-    {0x6, 0x3,  0x002F, 0x1}   // Устройство 6
+    {0x1, 0x3,  0x0000, 0x1},   // Устройство 1
+    {0x2, 0x3,  0x0000, 0x4},   // Устройство 2
+    {0x2, 0x10,  0x0000, 0x1},   // Устройство 3
+    {0x3, 0x3,  0x0000, 0x1},   // Устройство 4
+    {0x4, 0x3,  0x0000, 0x2},   // Устройство 5
+    {0x5, 0x3,  0x0000, 0x1}    // Устройство 6
 };
 
  idata  ModbusRequest temp_request;
-	u8 send_buff[8]={0, };
+	u8 send_buff[8]={0,};
   u32 polling_timer=0;                    // Таймер ожидания ответа
 	u8 polling_state;                     // Состояние опроса: 0 - отправка, 1 - ожидание
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
- 	u16 send_reg[8]={0, };
+  idata u16 send_reg[8]={2,0,0,0x08,0,0,0,2 };
   u16 recv_len;
 	idata u8 command_value; // Объявление переменной
 	float temperature;
@@ -46,22 +46,22 @@ idata  ModbusRequest request[6] = {
   xdata ModbusPacket receivedPacket;
 	u16 freq;
   u16 receive_cmd=0;
-xdata u16 receive_adr=0;
+  xdata u16 receive_adr=0;
 
      xdata u16 result=0;	
      sys_init();//System initialization
-	   uart2_init(9600);//Initialize serial port 2
+	   uart2_init(BOUDRATE);//Initialize serial port 2
 		 current_device = 0;
 		 polling_state=0;
 	   sys_tick=IDLE_TIME;
 	while(1){   
 			
-		if((sys_tick=0)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
+		if((sys_tick==0)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
 					
 		if(uart2_rx_sta & UART2_PACKET_OK)
 		{
 				
-			len = uart2_rx_sta&UART2_PACKET_LEN;
+			len = uart2_rx_sta & UART2_PACKET_LEN;
 				
 		  sys_write_vp(0x2069, (u16*)&len, 2);
 	
@@ -109,6 +109,8 @@ xdata u16 receive_adr=0;
 									
                         sys_write_vp(0x2007,(u16*)&freq,2);			
                        } else {
+												 	sys_write_vp(0x2096, "DATA_ERR\n", 6);
+												 
                          break;
                         }
                     break;							 
@@ -122,12 +124,19 @@ xdata u16 receive_adr=0;
 			 
 			 }else if (result == 99) {
 						sys_write_vp(0x2096, "Lenght\n", 4);
-				  
+				 sys_delay_ms(20);
+				 uart2_rx_sta = 0;
+				  uart2_reset(BOUDRATE);
 				}else if (result == 98) {
 						sys_write_vp(0x2096, "CRC   \n", 4);
-
+					sys_delay_ms(20);
+					uart2_rx_sta = 0;
+             uart2_reset(BOUDRATE);
 				}else {
 						sys_write_vp(0x2096, "ERROR\n", 4);
+					sys_delay_ms(20);
+					uart2_rx_sta = 0;
+					 uart2_reset(BOUDRATE);
 				}
 				
 		  	uart2_rx_sta = 0;
@@ -137,8 +146,7 @@ xdata u16 receive_adr=0;
 			{
 				uart2_buf[i]=0;
 			}
-			 
-			 
+			 		 
 			rcv_complete=1;
 		}
 	 
@@ -151,20 +159,28 @@ if (polling_state==0) {
           }
 	
 					
-		sys_delay_ms(10);
+		sys_delay_ms(15);
 		temp_request = request[current_device];
 		sys_write_vp(0x2000,(u8*)&current_device,1);
     command_value = temp_request.command; // Присваивание значения
     sys_write_vp(0x2001, &temp_request.command, 1); // Запись значения команды
 		sys_write_vp(0x2002, &temp_request.start_register, 1); // Запись первого регистра
-    data_len=(temp_request.num_registers * 2)+5;	
+					
+		if(command_value==0x03){			
+    data_len=(temp_request.num_registers * 2)+5;	}
+		
+		if(command_value==0x10){			
+    data_len=8;}
+		
+		if(command_value==0x6){			
+    data_len=8;}
+		
 		sys_write_vp(0x2003,(u16*)&data_len, 2);	
     sys_write_vp(0x2004, &temp_request.address, 1);
 		polling_timer=200000; 
 		polling_state=1;
-		modbus_requests((ModbusRequest*)&temp_request,send_reg,8);
-					
-			sys_tick=IDLE_TIME;
+		modbus_requests((ModbusRequest*)&temp_request,send_reg,8);			
+		sys_tick=IDLE_TIME;
 	     }
 
       polling_timer--;

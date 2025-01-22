@@ -31,17 +31,17 @@ compiling main.c...
 main.c(66): warning C182: pointer to different objects
 main.c(81): warning C182: pointer to different objects
 main.c(110): warning C182: pointer to different objects
-main.c(158): warning C182: pointer to different objects
-main.c(159): warning C182: pointer to different objects
-main.c(161): warning C182: pointer to different objects
-main.c(162): warning C182: pointer to different objects
+main.c(166): warning C182: pointer to different objects
+main.c(167): warning C182: pointer to different objects
+main.c(178): warning C182: pointer to different objects
+main.c(179): warning C182: pointer to different objects
 compiling sys.c...
 compiling uart2.c...
-..\HANDWARE\UART2\uart2.c(172): warning C182: pointer to different objects
-..\HANDWARE\UART2\uart2.c(173): warning C182: pointer to different objects
-..\HANDWARE\UART2\uart2.c(209): warning C291: not every exit path returns a value
+..\HANDWARE\UART2\uart2.c(185): warning C182: pointer to different objects
+..\HANDWARE\UART2\uart2.c(186): warning C182: pointer to different objects
+..\HANDWARE\UART2\uart2.c(222): warning C291: not every exit path returns a value
 linking...
-Program Size: data=76.1 xdata=314 const=0 code=7439
+Program Size: data=92.1 xdata=298 const=0 code=7730
 creating hex file from "..\OBJ\template"...
 User command #1: D:\WORK\DWIN\DWIN_MODBUS\C51\USER\hex2bin.bat
 D:\WORK\DWIN\DWIN_MODBUS\C51\USER>cd .. 
@@ -53,79 +53,3 @@ D:\WORK\DWIN\DWIN_MODBUS\C51\OBJ>copy "T5L51.bin" ..\
 D:\WORK\DWIN\DWIN_MODBUS\C51\OBJ>copy "T5L51.bin" ..\..\GUI\DWIN_SET 
 Скопировано файлов:         1.
 "..\OBJ\template" - 0 Error(s), 10 Warning(s).
-DWIN_SET 
-Скопировано файлов:         1.
-"..\OBJ\template" - 0 Error(s), 11 Warning(s).
-овано файлов:         1.
-"..\OBJ\template" - 0 Error(s), 12 Warning(s).
-ано файлов:         1.
-"..\OBJ\template" - 0 Error(s), 12 Warning(s).
-:\Program Files (x86)\KEIL\C51\Inc\string.h(43): error C127: '_strstr': invalid storage class
-C:\Program Files (x86)\KEIL\C51\Inc\string.h(44): error C127: '_strtok': invalid storage class
-C:\Program Files (x86)\KEIL\C51\Inc\string.h(46): error C127: '_memcmp': invalid storage class
-C:\Program Files (x86)\KEIL\C51\Inc\string.h(47): error C127: '_memcpy': invalid storage class
-C:\Program Files (x86)\KEIL\C51\Inc\string.h(48): error C127: '_memchr': invalid storage class
-C:\Program Files (x86)\KEIL\C51\Inc\string.h(49): error C127: '_memccpy': invalid storage class
-C:\Program Files (x86)\KEIL\C51\Inc\string.h(50): error C127: '_memmove': invalid storage class
-C:\Program Files (x86)\KEIL\C51\Inc\string.h(51): error C127: '_memset': invalid storage class
-main.c(4): error C127: 'modbus_addresses': invalid storage class
-main.c(5): error C127: 'start_reg': invalid storage class
-main.c(6): error C127: 'num_reg': invalid storage class
-main.c(8): error C127: 'rcv_timer': invalid storage class
-main.c(9): error C127: 'sys_tick': invalid storage class
-main.c(10): error C127: 'uart2_step': invalid storage class
-main.c(20): error C132: '_modbus_requests': not in formal parameter list
-main.c(23): error C132: 'main': not in formal parameter list
-main.c(23): error C141: syntax error near '{'
-main.c(26): error C244: 'request': can't initialize, bad type or class
-main.c(33): error C132: 'request': not in formal parameter list
-main.c(35): error C132: 'temp_request': not in formal parameter list
-main.c(36): error C244: 'send_buff': can't initialize, bad type or class
-main.c(36): error C132: 'send_buff': not in formal parameter list
-main.c(37): error C244: 'polling_timer': can't initialize, bad type or class
-main.c(37): error C132: 'polling_timer': not in formal parameter list
-main.c(38): error C132: 'polling_state': not in formal parameter list
-main.c(39): error C132: 'len': not in formal parameter list
-main.c(40): error C132: 'i': not in formal parameter list
-main.c(41): error C244: 'buff': can't initialize, bad type or class
-main.c(41): error C132: 'buff': not in formal parameter list
-main.c(42): error C132: 'recv_len': not in formal parameter list
-main.c(43): error C132: 'command_value': not in formal parameter list
-main.c(44): error C132: 'temperature': not in formal parameter list
-main.c(45): error C132: 'rawValue': not in formal parameter list
-main.c(46): error C132: 'receivedPacket': not in formal parameter list
-main.c(47): error C132: 'freq': not in formal parameter list
-main.c(48): error C244: 'receive_cmd': can't initialize, bad type or class
-main.c(48): error C132: 'receive_cmd': not in formal parameter list
-main.c(49): error C244: 'receive_adr': can't initialize, bad type or class
-main.c(49): error C132: 'receive_adr': not in formal parameter list
-main.c(51): error C244: 'result': can't initialize, bad type or class
-main.c(51): error C132: 'result': not in formal parameter list
-main.c(52): error C132: 'sys_init': not in formal parameter list
-main.c(53): error C141: syntax error near '9600'
-main.c(53): error C132: 'uart2_init': not in formal parameter list
-main.c(54): error C244: 'current_device': can't initialize, bad type or class
-main.c(54): error C132: 'current_device': not in formal parameter list
-main.c(55): error C244: 'polling_state': can't initialize, bad type or class
-main.c(55): error C132: 'polling_state': not in formal parameter list
-main.c(56): error C141: syntax error near 'while'
-main.c(56): error C141: syntax error near '1'
-main.c(60): error C141: syntax error near '-', expected ')'
-main.c(60): error C129: missing ';' before ')'
-compiling sys.c...
-compiling uart2.c...
-..\HANDWARE\UART2\uart2.h(33): error C141: syntax error near 'value', expected ')'
-..\HANDWARE\UART2\uart2.c(5): error C244: 'modbus_addresses': can't initialize, bad type or class
-..\HANDWARE\UART2\uart2.c(5): error C132: 'modbus_addresses': not in formal parameter list
-..\HANDWARE\UART2\uart2.c(6): error C244: 'start_reg': can't initialize, bad type or class
-..\HANDWARE\UART2\uart2.c(6): error C132: 'start_reg': not in formal parameter list
-..\HANDWARE\UART2\uart2.c(7): error C244: 'num_reg': can't initialize, bad type or class
-..\HANDWARE\UART2\uart2.c(7): error C132: 'num_reg': not in formal parameter list
-..\HANDWARE\UART2\uart2.c(8): error C244: 'current_dev': can't initialize, bad type or class
-..\HANDWARE\UART2\uart2.c(8): error C132: 'current_dev': not in formal parameter list
-..\HANDWARE\UART2\uart2.c(9): error C244: 'rcv_timer': can't initialize, bad type or class
-..\HANDWARE\UART2\uart2.c(9): error C132: 'rcv_timer': not in formal parameter list
-..\HANDWARE\UART2\uart2.c(10): error C244: 'current_device': can't initialize, bad type or class
-..\HANDWARE\UART2\uart2.c(10): error C132: 'current_device': not in formal parameter list
-..\HANDWARE\UART2\uart2.c(14): error C132: 'uart2_rx_sta': not in formal parameter list
-Target not created.

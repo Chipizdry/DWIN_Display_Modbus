@@ -9,7 +9,7 @@
 #define UART2_PACKET_LEN					0x7fff	//Length of packet
 #define UART2_PACKET_MAX_LEN			64			//Defines the maximum length of the serial port package, excluding '\n' or "\r\n" end tags
 
-#define IDLE_TIME 300000
+#define IDLE_TIME 500000
 //Variable declaration
 extern xdata u16 uart2_rx_sta;
 extern xdata u8  uart2_buf[];
@@ -26,6 +26,7 @@ extern  volatile u16 num_reg;                    // Количество рег�
 
 //Function declaration
 void uart2_init(u32 baud);
+void uart2_reset(u32 baud);
 void u2_send_byte(u8 byte);
 void u2_send_bytes(u8 *bytes,u16 len);
 u16 calculate_crc(unsigned char *buffer, unsigned char length);
