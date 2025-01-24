@@ -22,26 +22,26 @@ Dialog DLL:      TCore51.DLL V2.66.2.1
  
 <h2>Project:</h2>
 D:\WORK\DWIN\DWIN_MODBUS\C51\USER\template.uvproj
-Project File Date:  01/14/2025
+Project File Date:  01/23/2025
 
 <h2>Output:</h2>
 Rebuild target 'TEMPLATE'
 assembling STARTUP_M5.A51...
 compiling main.c...
-main.c(66): warning C182: pointer to different objects
-main.c(81): warning C182: pointer to different objects
-main.c(110): warning C182: pointer to different objects
-main.c(166): warning C182: pointer to different objects
-main.c(167): warning C182: pointer to different objects
-main.c(178): warning C182: pointer to different objects
-main.c(179): warning C182: pointer to different objects
+main.c(84): warning C182: pointer to different objects
+main.c(99): warning C182: pointer to different objects
+main.c(128): warning C182: pointer to different objects
+main.c(184): warning C182: pointer to different objects
+main.c(185): warning C182: pointer to different objects
+main.c(196): warning C182: pointer to different objects
+main.c(197): warning C182: pointer to different objects
 compiling sys.c...
 compiling uart2.c...
 ..\HANDWARE\UART2\uart2.c(185): warning C182: pointer to different objects
 ..\HANDWARE\UART2\uart2.c(186): warning C182: pointer to different objects
 ..\HANDWARE\UART2\uart2.c(222): warning C291: not every exit path returns a value
 linking...
-Program Size: data=92.1 xdata=298 const=0 code=7730
+Program Size: data=93.1 xdata=299 const=0 code=8162
 creating hex file from "..\OBJ\template"...
 User command #1: D:\WORK\DWIN\DWIN_MODBUS\C51\USER\hex2bin.bat
 D:\WORK\DWIN\DWIN_MODBUS\C51\USER>cd .. 
@@ -53,3 +53,10 @@ D:\WORK\DWIN\DWIN_MODBUS\C51\OBJ>copy "T5L51.bin" ..\
 D:\WORK\DWIN\DWIN_MODBUS\C51\OBJ>copy "T5L51.bin" ..\..\GUI\DWIN_SET 
 Скопировано файлов:         1.
 "..\OBJ\template" - 0 Error(s), 10 Warning(s).
+c_cat.exe template.hex -Intel -o T5L51.bin -Binary  
+D:\WORK\DWIN\DWIN_MODBUS\C51\OBJ>echo.
+D:\WORK\DWIN\DWIN_MODBUS\C51\OBJ>copy "T5L51.bin" ..\ 
+Скопировано файлов:         1.
+D:\WORK\DWIN\DWIN_MODBUS\C51\OBJ>copy "T5L51.bin" ..\..\GUI\DWIN_SET 
+Скопировано файлов:         1.
+"..\OBJ\template" - 0 Error(s), 14 Warning(s).

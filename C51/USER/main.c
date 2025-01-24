@@ -15,7 +15,7 @@ extern u8  uart2_step;
 #define WHILE_TXT		 "WHILE___ \0\0"
 #define BOUDRATE 9600
 
-
+#define BTN_VAL_ADDR 3000
 
 
 void main(void)
@@ -38,15 +38,18 @@ idata  ModbusRequest request[6] = {
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
-  idata u16 send_reg[8]={2,0,0,0x08,0,0,0,2 };
+  idata u16 send_reg[8]={2,0,0,0x08,0,0,0,0 };
+	idata u8 btn_val=0;
+	u8 main_on;
   u16 recv_len;
-	idata u8 command_value; // Объявление переменной
+	idata u8 command_value; 
 	float temperature;
 	u16 rawValue;
   xdata ModbusPacket receivedPacket;
 	u16 freq;
   u16 receive_cmd=0;
   xdata u16 receive_adr=0;
+	
 
      xdata u16 result=0;	
      sys_init();//System initialization
@@ -54,7 +57,22 @@ idata  ModbusRequest request[6] = {
 		 current_device = 0;
 		 polling_state=0;
 	   sys_tick=IDLE_TIME;
+	
+	
+	  
 	while(1){   
+		
+		
+		btn_val=0;
+		sys_read_vp(0x2079,(u8*)&btn_val,1);
+		
+		btn_val &= 0x01;
+		main_on=btn_val;
+		//	btn_val = 0x01;
+		setBitInUint16(&send_reg[7], 1, main_on);
+		//setBitInUint16(&send_reg[7], 2, 1);
+		//setBitInUint16(&send_reg[7], 3, 1);
+		sys_write_vp(0x2075,(u8*)&btn_val,1);
 			
 		if((sys_tick==0)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
 					

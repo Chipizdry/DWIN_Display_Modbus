@@ -284,7 +284,7 @@ void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len) {
 }
 
 // Функция для установки значения переменной в определённый бит регистра
-void setBitInUint16(u16 *reg, u8 bitPos, bool value) {
+ void setBitInUint16(u16 *reg, u8 bitPos, u8 value) {
     if (bitPos < 16) { // Убедимся, что номер бита в пределах 0-15
         if (value) {
             *reg |= (1 << bitPos); // Установить бит
