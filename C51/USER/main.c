@@ -14,21 +14,22 @@ extern u8  uart2_step;
 #define INT_TXT		 "INERRUPT \0\0"
 #define WHILE_TXT		 "WHILE___ \0\0"
 #define BOUDRATE 9600
-
+#define DEVICES 7
 #define BTN_VAL_ADDR 3000
-
+#define POLLING_TIME 180000
 
 void main(void)
 {   
 
 // Глобальные переменные в `xdata`
-idata  ModbusRequest request[6] = {
-    {0x1, 0x3,  0x0000, 0x1},   // Устройство 1
-    {0x2, 0x3,  0x0000, 0x4},   // Устройство 2
-    {0x2, 0x10,  0x0000, 0x1},   // Устройство 3
-    {0x3, 0x3,  0x0000, 0x1},   // Устройство 4
-    {0x4, 0x3,  0x0000, 0x2},   // Устройство 5
-    {0x5, 0x3,  0x0000, 0x1}    // Устройство 6
+idata  ModbusRequest request[DEVICES] = {
+    {0x1, 0x3,   0x0000, 0x1},   // Устройство 1
+    {0x2, 0x3,   0x0000, 0x4},   // Устройство 2
+    {0x2, 0x10,  0x0000, 0x1},  // Устройство 3
+		{0x3, 0x3,   0x0000, 0x1},   // Устройство 4
+    {0x4, 0x3,   0x0000, 0x1},   // Устройство 5
+    {0x5, 0x3,   0x0000, 0x1},   // Устройство 6
+		{0x6, 0x3,   0x0000, 0x1}    // Устройство 7
 };
 
  idata  ModbusRequest temp_request;
@@ -39,8 +40,7 @@ idata  ModbusRequest request[6] = {
 	u16 i;
   u8 buff[48]={0, };
   idata u16 send_reg[8]={2,0,0,0x08,0,0,0,0 };
-	idata u8 btn_val=0;
-	u8 main_on;
+	idata u16 btn_val;
   u16 recv_len;
 	idata u8 command_value; 
 	float temperature;
@@ -61,18 +61,6 @@ idata  ModbusRequest request[6] = {
 	
 	  
 	while(1){   
-		
-		
-		btn_val=0;
-		sys_read_vp(0x2079,(u8*)&btn_val,1);
-		
-		btn_val &= 0x01;
-		main_on=btn_val;
-		//	btn_val = 0x01;
-		setBitInUint16(&send_reg[7], 1, main_on);
-		//setBitInUint16(&send_reg[7], 2, 1);
-		//setBitInUint16(&send_reg[7], 3, 1);
-		sys_write_vp(0x2075,(u8*)&btn_val,1);
 			
 		if((sys_tick==0)&&(polling_state == 1)&&(uart2_rx_sta)){uart2_rx_sta |= UART2_PACKET_OK; }; // Таймаут прерывания приёма данных 
 					
@@ -172,7 +160,7 @@ idata  ModbusRequest request[6] = {
 	
 		
 if (polling_state==0) {
-	     if (current_device >= 6) {
+	     if (current_device >= DEVICES) {
            current_device = 0; // Сбрасываем индекс, если он выходит за границы
           }
 	
@@ -195,8 +183,23 @@ if (polling_state==0) {
 		
 		sys_write_vp(0x2003,(u16*)&data_len, 2);	
     sys_write_vp(0x2004, &temp_request.address, 1);
-		polling_timer=200000; 
+		polling_timer=POLLING_TIME; 
 		polling_state=1;
+		
+		
+		
+				btn_val=0;
+		sys_read_vp(0x2079,(u16*)&btn_val,1);
+		
+		
+	
+		btn_val&= 0x01;
+		setBitInUint16(&send_reg[7], 0, btn_val);
+		setBitInUint16(&send_reg[7], 2, 1);
+		setBitInUint16(&send_reg[7], 3, 1);
+		sys_write_vp(0x2075,(u16*)&btn_val,1);
+		
+		
 		modbus_requests((ModbusRequest*)&temp_request,send_reg,8);			
 		sys_tick=IDLE_TIME;
 	     }
@@ -214,7 +217,7 @@ if (polling_state==0) {
             current_device=current_device+1;
             polling_state = 0;  // Возврат в состояние отправки
 					  rcv_complete=0;
-					  polling_timer=200000;
+					  polling_timer=POLLING_TIME;
 					  sys_tick=IDLE_TIME;
         }
         // Если время ожидания истекло
