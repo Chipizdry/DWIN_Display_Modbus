@@ -39,8 +39,13 @@ idata  ModbusRequest request[DEVICES] = {
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
-  idata u16 send_reg[8]={2,0,0,0x08,0,0,0,0 };
+  idata u16 send_reg[8]={0,0,0,0x08,0,0,0,0 };
 	idata u16 btn_val;
+	u16 pwm_width;
+	u16 coil_1;
+	u16 coil_2;
+	u16 coil_3;
+	u16 coil_4;
   u16 recv_len;
 	idata u8 command_value; 
 	float temperature;
@@ -190,8 +195,14 @@ if (polling_state==0) {
 		
 				btn_val=0;
 		sys_read_vp(0x2079,(u16*)&btn_val,1);
+		sys_read_vp(0x2064,(u16*)&pwm_width,1);
+		sys_read_vp(0x2073,(u16*)&freq,1);
 		
-		
+		send_reg[0]=pwm_width;
+		send_reg[1]=pwm_width;
+		send_reg[2]=pwm_width;
+		send_reg[3]=pwm_width;
+		send_reg[4]=freq;
 	
 		btn_val&= 0x01;
 		setBitInUint16(&send_reg[7], 0, btn_val);
