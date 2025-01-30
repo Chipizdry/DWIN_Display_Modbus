@@ -16,7 +16,7 @@ extern u8  uart2_step;
 #define BOUDRATE 9600
 #define DEVICES 7
 #define BTN_VAL_ADDR 3000
-#define POLLING_TIME 180000
+#define POLLING_TIME 160000
 
 void main(void)
 {   
@@ -39,19 +39,21 @@ idata  ModbusRequest request[DEVICES] = {
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
-  idata u16 send_reg[8]={0,0,0,0x08,0,0,0,0 };
+  idata u16 send_reg[8]={0,0,0,0,0,0,0,0 };
 	idata u16 btn_val;
 	u16 pwm_width;
 	u16 coil_1;
 	u16 coil_2;
 	u16 coil_3;
 	u16 coil_4;
+	u16 auto_manual;
   u16 recv_len;
 	idata u8 command_value; 
 	float temperature;
 	u16 rawValue;
   xdata ModbusPacket receivedPacket;
 	u16 freq;
+	u16 rpm;
   u16 receive_cmd=0;
   xdata u16 receive_adr=0;
 	
@@ -117,7 +119,8 @@ idata  ModbusRequest request[DEVICES] = {
                       
 									  // Извлекаем данные (первый регистр)
                        freq = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
-									
+									     rpm =(receivedPacket.rcv_data[4] << 8) | receivedPacket.rcv_data[5];
+									      sys_write_vp(0x2081,(u16*)&rpm,1);	
                         sys_write_vp(0x2007,(u16*)&freq,2);			
                        } else {
 												 	sys_write_vp(0x2096, "DATA_ERR\n", 6);
@@ -193,7 +196,7 @@ if (polling_state==0) {
 		
 		
 		
-				btn_val=0;
+		btn_val=0;
 		sys_read_vp(0x2079,(u16*)&btn_val,1);
 		sys_read_vp(0x2064,(u16*)&pwm_width,1);
 		sys_read_vp(0x2073,(u16*)&freq,1);
@@ -203,13 +206,23 @@ if (polling_state==0) {
 		send_reg[2]=pwm_width;
 		send_reg[3]=pwm_width;
 		send_reg[4]=freq;
+		
+		coil_1=btn_val&0x2;
+		coil_2=btn_val&0x4;
+		coil_3=btn_val&0x8;
+		coil_4=btn_val&0x10;
+		auto_manual=btn_val&0x20;
 	
 		btn_val&= 0x01;
 		setBitInUint16(&send_reg[7], 0, btn_val);
-		setBitInUint16(&send_reg[7], 2, 1);
-		setBitInUint16(&send_reg[7], 3, 1);
+		setBitInUint16(&send_reg[7], 1, coil_1);
+		setBitInUint16(&send_reg[7], 2, coil_2);
+		setBitInUint16(&send_reg[7], 3, coil_3);
+		setBitInUint16(&send_reg[7], 4, coil_4);
+		setBitInUint16(&send_reg[7], 5, auto_manual);
+		auto_manual=(auto_manual>>5)&0x01;
 		sys_write_vp(0x2075,(u16*)&btn_val,1);
-		
+		sys_write_vp(0x2060,(u16*)&auto_manual,1);
 		
 		modbus_requests((ModbusRequest*)&temp_request,send_reg,8);			
 		sys_tick=IDLE_TIME;
@@ -240,6 +253,9 @@ if (polling_state==0) {
 						{
 							buff[i]=0;
 						}
+						
+						
+						
             // Переход к следующему устройству
             current_device=current_device+1;
             polling_state = 0;  // Возврат в состояние отправки
