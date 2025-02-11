@@ -23,9 +23,9 @@ void main(void)
 
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[DEVICES] = {
-    {0x1, 0x3,   0x0000, 0x1},   // Устройство 1
-    {0x2, 0x3,   0x0000, 0x8},   // Устройство 2
-    {0x2, 0x10,  0x0000, 0x1},   // Устройство 3
+    {0x3, 0x3,   0x0000, 0x1},   // Устройство 1
+    {0x2, 0x3,   0x0000, 0x4},   // Устройство 2
+    {0x2, 0x10,  0x0000, 0x1},  // Устройство 3
 		{0x3, 0x3,   0x0000, 0x1},   // Устройство 4
     {0x4, 0x3,   0x0000, 0x1},   // Устройство 5
     {0x5, 0x3,   0x0000, 0x1},   // Устройство 6
@@ -36,11 +36,6 @@ idata  ModbusRequest request[DEVICES] = {
 	u8 send_buff[8]={0,};
   u32 polling_timer=0;                    // Таймер ожидания ответа
 	u8 polling_state;                     // Состояние опроса: 0 - отправка, 1 - ожидание
-	u16 icon_1;
-	u16 icon_2;
-	u16 icon_3;
-	u16 icon_4;
-	
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
@@ -59,16 +54,10 @@ idata  ModbusRequest request[DEVICES] = {
 	float temperature_2;
 	float temperature_3;
 	float temperature_4;
-	
 	u16 rawValue;
   xdata ModbusPacket receivedPacket;
 	u16 freq;
 	u16 rpm;
-	float current_1;
-	float current_2;
-	float current_3;
-	float current_4;
-	
   u16 receive_cmd=0;
   xdata u16 receive_adr=0;
 	
@@ -108,7 +97,7 @@ idata  ModbusRequest request[DEVICES] = {
 			result=parseModbusPacket(&uart2_buf,len,(ModbusPacket*)&receivedPacket);		
 			 sys_write_vp(0x2071, &result, 1);
 			 if (result==1) {   
-						 sys_write_vp(0x2099, "OK    \n", 4);
+						 sys_write_vp(0x2096, "OK    \n", 4);
 			 
 			 switch (receivedPacket.rcv_address) {
 
@@ -121,8 +110,8 @@ idata  ModbusRequest request[DEVICES] = {
                             rawValue = rawValue - 65536; // Отрицательное значение
                         }
                        temperature = rawValue / 10.0; // Масштабирование
-                       sys_write_vp(0x2005,(u8*)&temperature,2);
-												rawValue =0;
+                       sys_write_vp(0x2005,(u8*)&temperature,2);	
+                       rawValue =	0;											
                        } else {
                       
                         }
@@ -136,27 +125,17 @@ idata  ModbusRequest request[DEVICES] = {
 									  // Извлекаем данные (первый регистр)
                        freq = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
 									     rpm =(receivedPacket.rcv_data[4] << 8) | receivedPacket.rcv_data[5];
-									    // rawValue = (receivedPacket.rcv_data[6] << 8) | receivedPacket.rcv_data[7];
-								    	// if (rawValue & 0x8000) { // Проверяем знак числа
-                      //      rawValue = rawValue - 65536; // Отрицательное значение
-                      //  }
-									    // current_1 = rawValue / 10.0; // Масштабирование
-                     //  sys_write_vp(0x2091,(u8*)&current_1,2);	
-                     //  rawValue =0;
-									 
-									 
-									   //  rawValue = (receivedPacket.rcv_data[8] << 8) | receivedPacket.rcv_data[9];
 									      sys_write_vp(0x2081,(u16*)&rpm,1);	
                         sys_write_vp(0x2007,(u16*)&freq,2);			
                        } else {
-												 	sys_write_vp(0x2099, "DATA_ERR\n", 6);
+												 	sys_write_vp(0x2096, "DATA_ERR\n", 6);
 												 
                          break;
                         }
                     break;							 
 					 
-							 case 0x03:		 
-					     // Проверяем длину данных
+		          case 0x03:		 
+					    // Проверяем длину данных
                     if (receivedPacket.rcv_dataLength >= 2) {
                         // Извлекаем данные (первый регистр)
                         rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
@@ -164,15 +143,16 @@ idata  ModbusRequest request[DEVICES] = {
                             rawValue = rawValue - 65536; // Отрицательное значение
                         }
                        temperature_1 = rawValue / 10.0; // Масштабирование
-                       sys_write_vp(0x2083,(u8*)&temperature_1,2);	
-                       rawValue =0;												
+                       sys_write_vp(0x2085,(u8*)&temperature_1,2);	
+                       rawValue =	0;												
                        } else {
                       
                         }
-                    break;					
+                    break;										
 												
-									 case 0x04:		 
-					     // Проверяем длину данных
+												
+									case 0x04:		 
+					        // Проверяем длину данных
                     if (receivedPacket.rcv_dataLength >= 2) {
                         // Извлекаем данные (первый регистр)
                         rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
@@ -180,16 +160,16 @@ idata  ModbusRequest request[DEVICES] = {
                             rawValue = rawValue - 65536; // Отрицательное значение
                         }
                        temperature_2 = rawValue / 10.0; // Масштабирование
-                       sys_write_vp(0x2085,(u8*)&temperature_2,2);	
-                       rawValue =0;												
+                       sys_write_vp(0x2087,(u8*)&temperature_2,2);	
+                       rawValue =	0;												
                        } else {
                       
                         }
-                    break;									
-										
-
-                 	 case 0x05:		 
-					     // Проверяем длину данных
+                    break;										
+												
+												
+							    case 0x05:		 
+					        // Проверяем длину данных
                     if (receivedPacket.rcv_dataLength >= 2) {
                         // Извлекаем данные (первый регистр)
                         rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
@@ -197,15 +177,15 @@ idata  ModbusRequest request[DEVICES] = {
                             rawValue = rawValue - 65536; // Отрицательное значение
                         }
                        temperature_3 = rawValue / 10.0; // Масштабирование
-                       sys_write_vp(0x2087,(u8*)&temperature_3,2);	
-                       rawValue =0;												
+                       sys_write_vp(0x2089,(u8*)&temperature_3,2);	
+                       rawValue =	0;												
                        } else {
                       
                         }
-                    break;																	
-										
-               	 case 0x06:		 
-					     // Проверяем длину данных
+                    break;							
+
+                  case 0x06:		 
+					        // Проверяем длину данных
                     if (receivedPacket.rcv_dataLength >= 2) {
                         // Извлекаем данные (первый регистр)
                         rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
@@ -213,12 +193,13 @@ idata  ModbusRequest request[DEVICES] = {
                             rawValue = rawValue - 65536; // Отрицательное значение
                         }
                        temperature_4 = rawValue / 10.0; // Масштабирование
-                       sys_write_vp(0x2089,(u8*)&temperature_4,2);	
-                       rawValue =0;												
+                       sys_write_vp(0x2091,(u8*)&temperature_4,2);	
+                       rawValue =	0;												
                        } else {
                       
                         }
-                    break;					
+                    break;																			
+																	
 												
 					    default:
             break;
@@ -228,17 +209,17 @@ idata  ModbusRequest request[DEVICES] = {
 			 
 			 
 			 }else if (result == 99) {
-						sys_write_vp(0x2099, "Lenght\n", 4);
+						sys_write_vp(0x2096, "Lenght\n", 4);
 				 sys_delay_ms(20);
 				 uart2_rx_sta = 0;
 				  uart2_reset(BOUDRATE);
 				}else if (result == 98) {
-						sys_write_vp(0x2099, "CRC   \n", 4);
+						sys_write_vp(0x2096, "CRC   \n", 4);
 					sys_delay_ms(20);
 					uart2_rx_sta = 0;
              uart2_reset(BOUDRATE);
 				}else {
-						sys_write_vp(0x2099, "ERROR\n", 4);
+						sys_write_vp(0x2096, "ERROR\n", 4);
 					sys_delay_ms(20);
 					uart2_rx_sta = 0;
 					 uart2_reset(BOUDRATE);
@@ -303,15 +284,7 @@ if (polling_state==0) {
 		coil_3=btn_val&0x8;
 		coil_4=btn_val&0x10;
 		auto_manual=btn_val&0x20;
-		
-		icon_1=(coil_1>>1)&0x1;
-		icon_2=(coil_1>>2)&0x1;
-		icon_3=(coil_1>>3)&0x1;
-		icon_4=(coil_1>>4)&0x1;
 	
-	 // sys_write_vp(0x2077,(u16*)&icon_3,1); 
-		 
-		 
 		btn_val&= 0x01;
 		setBitInUint16(&send_reg[7], 0, btn_val);
 		setBitInUint16(&send_reg[7], 1, coil_1);
