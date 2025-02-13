@@ -296,7 +296,9 @@ if (polling_state==0) {
 		icon_3=(coil_3>>3)&0x01;
 		icon_4=(coil_4>>4)&0x01;
 		sys_write_vp(0x2105,(u16*)&icon_1,1);
+		sys_write_vp(0x2107,(u16*)&icon_2,1);
 		sys_write_vp(0x2109,(u16*)&icon_3,1);
+		sys_write_vp(0x2111,(u16*)&icon_4,1);
 	
 		btn_val&= 0x01;
 		setBitInUint16(&send_reg[7], 0, btn_val);

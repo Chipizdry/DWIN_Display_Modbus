@@ -1,4 +1,4 @@
-C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:05:40 PAGE 1   
+C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:41:05 PAGE 1   
 
 
 C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   51   1        u16 icon_2;
   52   1        u16 icon_3;
   53   1        u16 icon_4;
-C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:05:40 PAGE 2   
+C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:41:05 PAGE 2   
 
   54   1        
   55   1        u16 auto_manual;
@@ -126,7 +126,7 @@ line level    source
  110   5                 case 0x01:    
  111   5                  // Проверяем длину данных
  112   5                          if (receivedPacket.rcv_dataLength >= 2) {
-C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:05:40 PAGE 3   
+C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:41:05 PAGE 3   
 
  113   6                              // Извлекаем данные (первый регистр)
  114   6                              rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
@@ -190,7 +190,7 @@ line level    source
  170   6                             rawValue = 0;                        
  171   6                             } else {
  172   6                            
-C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:05:40 PAGE 4   
+C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:41:05 PAGE 4   
 
  173   6                              }
  174   5                          break;                    
@@ -254,7 +254,7 @@ line level    source
  232   4              }
  233   3              
  234   3              uart2_rx_sta = 0;
-C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:05:40 PAGE 5   
+C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:41:05 PAGE 5   
 
  235   3              len=0;
  236   3             
@@ -318,7 +318,7 @@ line level    source
  286   3          send_reg[4]=freq;
  287   3          
  288   3          coil_1=btn_val&0x2;
-C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:05:40 PAGE 6   
+C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:41:05 PAGE 6   
 
  289   3          coil_2=btn_val&0x4;
  290   3          coil_3=btn_val&0x8;
@@ -331,74 +331,78 @@ line level    source
  297   3          icon_4=(coil_4>>4)&0x01;
  298   3          sys_write_vp(0x2105,(u16*)&icon_1,1);
 *** WARNING C182 IN LINE 298 OF main.c: pointer to different objects
- 299   3          sys_write_vp(0x2109,(u16*)&icon_3,1);
+ 299   3          sys_write_vp(0x2107,(u16*)&icon_2,1);
 *** WARNING C182 IN LINE 299 OF main.c: pointer to different objects
- 300   3        
- 301   3          btn_val&= 0x01;
- 302   3          setBitInUint16(&send_reg[7], 0, btn_val);
- 303   3          setBitInUint16(&send_reg[7], 1, coil_1);
- 304   3          setBitInUint16(&send_reg[7], 2, coil_2);
- 305   3          setBitInUint16(&send_reg[7], 3, coil_3);
- 306   3          setBitInUint16(&send_reg[7], 4, coil_4);
- 307   3          setBitInUint16(&send_reg[7], 5, auto_manual);
- 308   3          auto_manual=(auto_manual>>5)&0x01;
- 309   3          sys_write_vp(0x2075,(u16*)&btn_val,1);
-*** WARNING C182 IN LINE 309 OF main.c: pointer to different objects
- 310   3          sys_write_vp(0x2060,(u16*)&auto_manual,1);
-*** WARNING C182 IN LINE 310 OF main.c: pointer to different objects
- 311   3          
- 312   3          modbus_requests((ModbusRequest*)&temp_request,send_reg,8);      
- 313   3          sys_tick=IDLE_TIME;
- 314   3             }
- 315   2      
- 316   2            polling_timer--;
- 317   2          
- 318   2          
- 319   2          // Состояние 1: Ожидание ответа
- 320   2          if (polling_state == 1) {
- 321   3              // Если получен ответ
- 322   3            
- 323   3              if (rcv_complete==1) {
- 324   4                  sys_write_vp(0x2042, "Received        \n", 9);      
- 325   4                  // Переход к следующему устройству
- 326   4                  current_device=current_device+1;
- 327   4                  polling_state = 0;  // Возврат в состояние отправки
- 328   4                  rcv_complete=0;
- 329   4                  polling_timer=POLLING_TIME;
- 330   4                  sys_tick=IDLE_TIME;
- 331   4              }
- 332   3              // Если время ожидания истекло
- 333   3               if (polling_timer ==0) {
- 334   4                  // Логируем таймаут (опционально)
- 335   4                  sys_write_vp(0x2042, "Timeout         \n", 9);
- 336   4           
- 337   4                  for(i=0;i<48;i++)
- 338   4                  {
- 339   5                    buff[i]=0;
- 340   5                  }
- 341   4                  
- 342   4                  
+ 300   3          sys_write_vp(0x2109,(u16*)&icon_3,1);
+*** WARNING C182 IN LINE 300 OF main.c: pointer to different objects
+ 301   3          sys_write_vp(0x2111,(u16*)&icon_4,1);
+*** WARNING C182 IN LINE 301 OF main.c: pointer to different objects
+ 302   3        
+ 303   3          btn_val&= 0x01;
+ 304   3          setBitInUint16(&send_reg[7], 0, btn_val);
+ 305   3          setBitInUint16(&send_reg[7], 1, coil_1);
+ 306   3          setBitInUint16(&send_reg[7], 2, coil_2);
+ 307   3          setBitInUint16(&send_reg[7], 3, coil_3);
+ 308   3          setBitInUint16(&send_reg[7], 4, coil_4);
+ 309   3          setBitInUint16(&send_reg[7], 5, auto_manual);
+ 310   3          auto_manual=(auto_manual>>5)&0x01;
+ 311   3          sys_write_vp(0x2075,(u16*)&btn_val,1);
+*** WARNING C182 IN LINE 311 OF main.c: pointer to different objects
+ 312   3          sys_write_vp(0x2060,(u16*)&auto_manual,1);
+*** WARNING C182 IN LINE 312 OF main.c: pointer to different objects
+ 313   3          
+ 314   3          modbus_requests((ModbusRequest*)&temp_request,send_reg,8);      
+ 315   3          sys_tick=IDLE_TIME;
+ 316   3             }
+ 317   2      
+ 318   2            polling_timer--;
+ 319   2          
+ 320   2          
+ 321   2          // Состояние 1: Ожидание ответа
+ 322   2          if (polling_state == 1) {
+ 323   3              // Если получен ответ
+ 324   3            
+ 325   3              if (rcv_complete==1) {
+ 326   4                  sys_write_vp(0x2042, "Received        \n", 9);      
+ 327   4                  // Переход к следующему устройству
+ 328   4                  current_device=current_device+1;
+ 329   4                  polling_state = 0;  // Возврат в состояние отправки
+ 330   4                  rcv_complete=0;
+ 331   4                  polling_timer=POLLING_TIME;
+ 332   4                  sys_tick=IDLE_TIME;
+ 333   4              }
+ 334   3              // Если время ожидания истекло
+ 335   3               if (polling_timer ==0) {
+ 336   4                  // Логируем таймаут (опционально)
+ 337   4                  sys_write_vp(0x2042, "Timeout         \n", 9);
+ 338   4           
+ 339   4                  for(i=0;i<48;i++)
+ 340   4                  {
+ 341   5                    buff[i]=0;
+ 342   5                  }
  343   4                  
- 344   4                  // Переход к следующему устройству
- 345   4                  current_device=current_device+1;
- 346   4                  polling_state = 0;  // Возврат в состояние отправки
-C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:05:40 PAGE 7   
+ 344   4                  
+C51 COMPILER V9.53.0.0   MAIN                                                              02/13/2025 12:41:05 PAGE 7   
 
- 347   4                  rcv_complete=0;
- 348   4                  sys_tick=IDLE_TIME;
- 349   4              }     
- 350   3          } 
- 351   2        }
- 352   1          
- 353   1      }
- 354          
- 355          
+ 345   4                  
+ 346   4                  // Переход к следующему устройству
+ 347   4                  current_device=current_device+1;
+ 348   4                  polling_state = 0;  // Возврат в состояние отправки
+ 349   4                  rcv_complete=0;
+ 350   4                  sys_tick=IDLE_TIME;
+ 351   4              }     
+ 352   3          } 
+ 353   2        }
+ 354   1          
+ 355   1      }
  356          
  357          
+ 358          
+ 359          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   2704    ----
+   CODE SIZE        =   2746    ----
    CONSTANT SIZE    =    244    ----
    XDATA SIZE       =   ----     189
    PDATA SIZE       =   ----    ----
@@ -412,4 +416,4 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
 END OF MODULE INFORMATION.
 
 
-C51 COMPILATION COMPLETE.  15 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  17 WARNING(S),  0 ERROR(S)
