@@ -46,6 +46,12 @@ idata  ModbusRequest request[DEVICES] = {
 	u16 coil_2;
 	u16 coil_3;
 	u16 coil_4;
+	
+	u16 icon_1;
+	u16 icon_2;
+	u16 icon_3;
+	u16 icon_4;
+	
 	u16 auto_manual;
   u16 recv_len;
 	idata u8 command_value; 
@@ -284,6 +290,13 @@ if (polling_state==0) {
 		coil_3=btn_val&0x8;
 		coil_4=btn_val&0x10;
 		auto_manual=btn_val&0x20;
+		
+		icon_1=(coil_1>>1)&0x01;
+		icon_2=(coil_2>>2)&0x01;
+		icon_3=(coil_3>>3)&0x01;
+		icon_4=(coil_4>>4)&0x01;
+		sys_write_vp(0x2105,(u16*)&icon_1,1);
+		sys_write_vp(0x2109,(u16*)&icon_3,1);
 	
 		btn_val&= 0x01;
 		setBitInUint16(&send_reg[7], 0, btn_val);
