@@ -17,26 +17,29 @@ extern u8  uart2_step;
 #define DEVICES 8
 #define BTN_VAL_ADDR 3000
 #define POLLING_TIME 160000
+#define POWER_TIME 900000
 
 void main(void)
 {   
 
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[DEVICES] = {
-    {0x1, 0x5,   0x0000, 0x0},   // Устройство 1
-    {0x2, 0x3,   0x0000, 0x4},   // Устройство 2
-    {0x2, 0x10,  0x0000, 0x1},  // Устройство 3
-		{0x3, 0x3,   0x0000, 0x1},   // Устройство 4
-    {0x4, 0x3,   0x0000, 0x1},   // Устройство 5
-    {0x5, 0x3,   0x0000, 0x1},   // Устройство 6
-		{0x6, 0x3,   0x0000, 0x1},    // Устройство 7
-		{0x7, 0x3,   0x0000, 0x1}    // Устройство 8
+    {0x1, 0x5,   0x0000, 0x0,0x0000},   // Устройство 1
+    {0x2, 0x3,   0x0000, 0x4,0x0000},   // Устройство 2
+    {0x2, 0x10,  0x0000, 0x1,0x0000},   // Устройство 3
+		{0x3, 0x3,   0x0000, 0x1,0x0000},   // Устройство 4
+    {0x4, 0x3,   0x0000, 0x1,0x0000},   // Устройство 5
+    {0x5, 0x3,   0x0000, 0x1,0x0000},   // Устройство 6
+		{0x6, 0x3,   0x0000, 0x1,0x0000},   // Устройство 7
+		{0x7, 0x3,   0x0000, 0x1,0x0000}    // Устройство 8
 };
 
  idata  ModbusRequest temp_request;
 	u8 send_buff[8]={0,};
   u32 polling_timer=0;                    // Таймер ожидания ответа
 	u8 polling_state;                     // Состояние опроса: 0 - отправка, 1 - ожидание
+	u8 power_delay;
+	u32 power_timer;
 	u16 len;
 	u16 i;
   u8 buff[48]={0, };
@@ -76,8 +79,8 @@ idata  ModbusRequest request[DEVICES] = {
 		 current_device = 0;
 		 polling_state=0;
 	   sys_tick=IDLE_TIME;
-	
-	
+	   power_delay=0;
+	   power_timer=0;
 	  
 	while(1){   
 			
@@ -111,7 +114,7 @@ idata  ModbusRequest request[DEVICES] = {
 
            case 0x01:		 
 					  // Проверяем длину данных
-                    if (receivedPacket.rcv_dataLength >= 2) {
+               /*     if (receivedPacket.rcv_dataLength >= 2) {
                         // Извлекаем данные (первый регистр)
                         rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
                         if (rawValue & 0x8000) { // Проверяем знак числа
@@ -122,7 +125,7 @@ idata  ModbusRequest request[DEVICES] = {
                        rawValue =	0;											
                        } else {
                       
-                        }
+                        } */
                     break;
 												
 						case 0x02:						
@@ -289,6 +292,9 @@ if (polling_state==0) {
 		if(command_value==0x6){			
     data_len=8;}
 		
+		if(command_value==0x0F){			
+    data_len=8;}
+		
 		sys_write_vp(0x2003,(u16*)&data_len, 2);	
     sys_write_vp(0x2004, &temp_request.address, 1);
 		polling_timer=POLLING_TIME; 
@@ -325,14 +331,30 @@ if (polling_state==0) {
 		sys_write_vp(0x2111,(u16*)&icon_4,1);
 		sys_write_vp(0x2113,(u16*)&pwr_icon,1);
 		
-		if(pwr_icon==1){
+		if((pwr_icon==1)&&(power_delay==0)){
+		request[0].command = 0x05;
+		request[0].start_register = 0x0000;
 		request[0].num_registers = 0xFF00;
+		power_delay=1;
+		power_timer=0;
+		}
 		
+		
+		if((pwr_icon==1)&&(power_delay==1)&&(power_timer>=POWER_TIME)){
+		request[0].command = 0x05;
+		request[0].start_register = 0x0001;
+		request[0].num_registers = 0xFF00;
+		power_delay=1;
+		power_timer=0;
 		}
 	
 		if(pwr_icon==0){
-		request[0].num_registers = 0x0000;
-		
+		request[0].command = 0x0F;
+		request[0].start_register = 0x0000;
+		request[0].num_registers = 0x0008;
+		request[0].special_cmd = 0x0100;
+		power_delay=0;
+		power_timer=0;
 		}
 		
 		btn_val&= 0x01;
@@ -353,7 +375,7 @@ if (polling_state==0) {
 	     }
 
       polling_timer--;
-		
+		  power_timer++;
 		
 		// Состояние 1: Ожидание ответа
     if (polling_state == 1) {

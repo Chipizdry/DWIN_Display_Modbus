@@ -16,6 +16,7 @@ typedef unsigned char bool;
 						u16 command;
 						u16 start_register;
 						u16 num_registers;
+		        u16 special_cmd;
 				} ModbusRequest;
 				
 

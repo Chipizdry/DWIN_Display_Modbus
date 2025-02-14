@@ -214,7 +214,17 @@ u16 calculate_crc(unsigned char *buffer, unsigned char length) {
 		 for(l=0; l<UART2_PACKET_MAX_LEN;l++) {buffer[l]=0;}
      return 1; }  
 			
+		  if(parsedPacket->rcv_functionCode == 0x05) { // Запись регистров
+		 
+		 
+		 return 1; }
+			
 		 if(parsedPacket->rcv_functionCode == 0x10) { // Запись регистров
+		 
+		 
+		 return 1; }
+		 
+		  if(parsedPacket->rcv_functionCode == 0x0F) { // Запись регистров
 		 
 		 
 		 return 1; }
@@ -245,7 +255,7 @@ void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len) {
         packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
         packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
         packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
-        len = 6; // Длина данных для функции 3
+        len = 6; // Длина данных для функции 5
 		   
     } 
 		
@@ -254,7 +264,18 @@ void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len) {
         packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
         packet[4] = (data_send[6] >> 8) & 0xFF;  // Старший байт количества регистров
         packet[5] = data_send[7] & 0xFF;         // Младший байт количества регистров
-        len = 6; // Длина данных для функции 3
+        len = 6; // Длина данных для функции 6
+		  
+    } 
+		
+		if (requests->command == 0x0F) { // Чтение регистров
+        packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
+        packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
+        packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
+        packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
+		   	packet[6] = (requests->special_cmd >> 8) & 0xFF;  // Старший байт количества регистров
+        packet[7] = requests->special_cmd & 0xFF;         // Младший байт количества регистров
+        len = 8; // Длина данных для функции 15
 		  
     } 
 		
