@@ -240,7 +240,14 @@ void modbus_requests(ModbusRequest *requests,u16 *data_send, u8 data_len) {
         len = 6; // Длина данных для функции 3
 		   
     } 
-  	
+  	if (requests->command == 0x05) { // Чтение регистров
+        packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра
+        packet[3] = requests->start_register & 0xFF;        // Младший байт начального регистра
+        packet[4] = (requests->num_registers >> 8) & 0xFF;  // Старший байт количества регистров
+        packet[5] = requests->num_registers & 0xFF;         // Младший байт количества регистров
+        len = 6; // Длина данных для функции 3
+		   
+    } 
 		
 		if (requests->command == 0x06) { // Чтение регистров
         packet[2] = (requests->start_register >> 8) & 0xFF; // Старший байт начального регистра

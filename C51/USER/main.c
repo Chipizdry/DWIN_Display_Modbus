@@ -14,7 +14,7 @@ extern u8  uart2_step;
 #define INT_TXT		 "INERRUPT \0\0"
 #define WHILE_TXT		 "WHILE___ \0\0"
 #define BOUDRATE 9600
-#define DEVICES 7
+#define DEVICES 8
 #define BTN_VAL_ADDR 3000
 #define POLLING_TIME 160000
 
@@ -23,13 +23,14 @@ void main(void)
 
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[DEVICES] = {
-    {0x3, 0x3,   0x0000, 0x1},   // Устройство 1
+    {0x1, 0x5,   0x0000, 0x0},   // Устройство 1
     {0x2, 0x3,   0x0000, 0x4},   // Устройство 2
     {0x2, 0x10,  0x0000, 0x1},  // Устройство 3
 		{0x3, 0x3,   0x0000, 0x1},   // Устройство 4
     {0x4, 0x3,   0x0000, 0x1},   // Устройство 5
     {0x5, 0x3,   0x0000, 0x1},   // Устройство 6
-		{0x6, 0x3,   0x0000, 0x1}    // Устройство 7
+		{0x6, 0x3,   0x0000, 0x1},    // Устройство 7
+		{0x7, 0x3,   0x0000, 0x1}    // Устройство 8
 };
 
  idata  ModbusRequest temp_request;
@@ -51,7 +52,8 @@ idata  ModbusRequest request[DEVICES] = {
 	u16 icon_2;
 	u16 icon_3;
 	u16 icon_4;
-	
+	u16 pwr_btn;
+	u16 pwr_icon;
 	u16 auto_manual;
   u16 recv_len;
 	idata u8 command_value; 
@@ -204,7 +206,24 @@ idata  ModbusRequest request[DEVICES] = {
                        } else {
                       
                         }
-                    break;																			
+                    break;	
+
+                 case 0x07:		 
+					       // Проверяем длину данных
+                    if (receivedPacket.rcv_dataLength >= 2) {
+                        // Извлекаем данные (первый регистр)
+                        rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
+                        if (rawValue & 0x8000) { // Проверяем знак числа
+                            rawValue = rawValue - 65536; // Отрицательное значение
+                        }
+                       temperature = rawValue / 10.0; // Масштабирование
+                       sys_write_vp(0x2005,(u8*)&temperature,2);	
+                       rawValue =	0;											
+                       } else {
+                      
+                        }
+                    break;
+																								
 																	
 												
 					    default:
@@ -264,6 +283,9 @@ if (polling_state==0) {
 		if(command_value==0x10){			
     data_len=8;}
 		
+		if(command_value==0x5){			
+    data_len=8;}
+		
 		if(command_value==0x6){			
     data_len=8;}
 		
@@ -290,16 +312,29 @@ if (polling_state==0) {
 		coil_3=btn_val&0x8;
 		coil_4=btn_val&0x10;
 		auto_manual=btn_val&0x20;
+		pwr_btn=btn_val&0x40;
 		
 		icon_1=(coil_1>>1)&0x01;
 		icon_2=(coil_2>>2)&0x01;
 		icon_3=(coil_3>>3)&0x01;
 		icon_4=(coil_4>>4)&0x01;
+		pwr_icon=(pwr_btn>>6)&0x01;
 		sys_write_vp(0x2105,(u16*)&icon_1,1);
 		sys_write_vp(0x2107,(u16*)&icon_2,1);
 		sys_write_vp(0x2109,(u16*)&icon_3,1);
 		sys_write_vp(0x2111,(u16*)&icon_4,1);
+		sys_write_vp(0x2113,(u16*)&pwr_icon,1);
+		
+		if(pwr_icon==1){
+		request[0].num_registers = 0xFF00;
+		
+		}
 	
+		if(pwr_icon==0){
+		request[0].num_registers = 0x0000;
+		
+		}
+		
 		btn_val&= 0x01;
 		setBitInUint16(&send_reg[7], 0, btn_val);
 		setBitInUint16(&send_reg[7], 1, coil_1);
@@ -307,7 +342,9 @@ if (polling_state==0) {
 		setBitInUint16(&send_reg[7], 3, coil_3);
 		setBitInUint16(&send_reg[7], 4, coil_4);
 		setBitInUint16(&send_reg[7], 5, auto_manual);
+		setBitInUint16(&send_reg[7], 6, pwr_btn);
 		auto_manual=(auto_manual>>5)&0x01;
+		
 		sys_write_vp(0x2075,(u16*)&btn_val,1);
 		sys_write_vp(0x2060,(u16*)&auto_manual,1);
 		
