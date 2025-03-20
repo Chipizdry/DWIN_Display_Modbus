@@ -69,6 +69,8 @@ idata  ModbusRequest request[DEVICES] = {
   xdata ModbusPacket receivedPacket;
 	u16 freq;
 	u16 rpm;
+	u16 tim_arr;
+	u16 pwm;
   u16 receive_cmd=0;
   xdata u16 receive_adr=0;
 	
@@ -136,6 +138,8 @@ idata  ModbusRequest request[DEVICES] = {
 									  // Извлекаем данные (первый регистр)
                        freq = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
 									     rpm =(receivedPacket.rcv_data[4] << 8) | receivedPacket.rcv_data[5];
+									 tim_arr =(receivedPacket.rcv_data[6] << 8) | receivedPacket.rcv_data[7];
+									     pwm =(receivedPacket.rcv_data[8] << 8) | receivedPacket.rcv_data[9];
 									      sys_write_vp(0x2081,(u16*)&rpm,1);	
                         sys_write_vp(0x2007,(u16*)&freq,2);			
                        } else {
@@ -399,9 +403,7 @@ if (polling_state==0) {
 						{
 							buff[i]=0;
 						}
-						
-						
-						
+										
             // Переход к следующему устройству
             current_device=current_device+1;
             polling_state = 0;  // Возврат в состояние отправки
