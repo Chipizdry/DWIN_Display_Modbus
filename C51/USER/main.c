@@ -25,7 +25,7 @@ void main(void)
 // Глобальные переменные в `xdata`
 idata  ModbusRequest request[DEVICES] = {
     {0x1, 0x5,   0x0000, 0x0,0x0000},   // Устройство 1
-    {0x2, 0x3,   0x0000, 0x4,0x0000},   // Устройство 2
+    {0x2, 0x3,   0x0000, 0x6,0x0000},   // Устройство 2
     {0x2, 0x10,  0x0000, 0x1,0x0000},   // Устройство 3
 		{0x3, 0x3,   0x0000, 0x1,0x0000},   // Устройство 4
     {0x4, 0x3,   0x0000, 0x1,0x0000},   // Устройство 5
@@ -65,12 +65,14 @@ idata  ModbusRequest request[DEVICES] = {
 	float temperature_2;
 	float temperature_3;
 	float temperature_4;
+	float pwm_percent;
 	u16 rawValue;
   xdata ModbusPacket receivedPacket;
 	u16 freq;
 	u16 rpm;
 	u16 tim_arr;
 	u16 pwm;
+	u16 color_speed;
   u16 receive_cmd=0;
   xdata u16 receive_adr=0;
 	
@@ -127,8 +129,8 @@ idata  ModbusRequest request[DEVICES] = {
                        rawValue =	0;											
                        } else {
                       
-                        } */
-                    break;
+                        } 
+                    break;*/
 												
 						case 0x02:						
 									
@@ -136,12 +138,28 @@ idata  ModbusRequest request[DEVICES] = {
                  if (receivedPacket.rcv_dataLength >= 2) {
                       
 									  // Извлекаем данные (первый регистр)
-                       freq = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
+                      freq =(receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];  
 									     rpm =(receivedPacket.rcv_data[4] << 8) | receivedPacket.rcv_data[5];
 									 tim_arr =(receivedPacket.rcv_data[6] << 8) | receivedPacket.rcv_data[7];
 									     pwm =(receivedPacket.rcv_data[8] << 8) | receivedPacket.rcv_data[9];
+									 
+	                      if(auto_manual==1){sys_write_vp(0x2064,(u16*)&pwm,1);}		
+                         
+												
+									      if(rpm<=45){
+												color_speed=0xC618;
+												sys_write_vp(0x5A1D,(u16*)&color_speed, 1);}
+												if((rpm>45)&&(rpm<900)){
+												color_speed=0xFC00;
+												sys_write_vp(0x5A1D,(u16*)&color_speed, 1);}
+												
+									      pwm_percent=(pwm*1000.0)/tim_arr/10.0;
 									      sys_write_vp(0x2081,(u16*)&rpm,1);	
-                        sys_write_vp(0x2007,(u16*)&freq,2);			
+									      sys_write_vp(0x2083,(u16*)&pwm,1);
+                        sys_write_vp(0x2007,(u16*)&freq,2);		
+                        sys_write_vp(0x2115,(u8*)&pwm_percent,2);	
+									 
+									 
                        } else {
 												 	sys_write_vp(0x2096, "DATA_ERR\n", 6);
 												 
@@ -310,6 +328,9 @@ if (polling_state==0) {
 		sys_read_vp(0x2079,(u16*)&btn_val,1);
 		sys_read_vp(0x2064,(u16*)&pwm_width,1);
 		sys_read_vp(0x2073,(u16*)&freq,1);
+	
+		if(pwm_width>=tim_arr){pwm_width=tim_arr;}
+		
 		
 		send_reg[0]=pwm_width;
 		send_reg[1]=pwm_width;
