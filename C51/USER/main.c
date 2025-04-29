@@ -14,7 +14,7 @@ extern u8  uart2_step;
 #define INT_TXT		 "INERRUPT \0\0"
 #define WHILE_TXT		 "WHILE___ \0\0"
 #define BOUDRATE 9600
-#define DEVICES 8
+#define DEVICES 9
 #define BTN_VAL_ADDR 3000
 #define POLLING_TIME 160000
 #define POWER_TIME 900000
@@ -31,7 +31,8 @@ idata  ModbusRequest request[DEVICES] = {
     {0x4, 0x3,   0x0000, 0x1,0x0000},   // Устройство 5
     {0x5, 0x3,   0x0000, 0x1,0x0000},   // Устройство 6
 		{0x6, 0x3,   0x0000, 0x1,0x0000},   // Устройство 7
-		{0x7, 0x3,   0x0000, 0x1,0x0000}    // Устройство 8
+		{0x7, 0x3,   0x0000, 0x1,0x0000},   // Устройство 8
+		{0x8, 0x3,   0x0000, 0x6,0x0000}    // Устройство 8
 };
 
  idata  ModbusRequest temp_request;
@@ -66,6 +67,9 @@ idata  ModbusRequest request[DEVICES] = {
 	float temperature_3;
 	float temperature_4;
 	float pwm_percent;
+	float energy_j;
+	float energy_w;
+	
 	u16 rawValue;
   xdata ModbusPacket receivedPacket;
 	u16 freq;
@@ -154,12 +158,13 @@ idata  ModbusRequest request[DEVICES] = {
 												sys_write_vp(0x5A1D,(u16*)&color_speed, 1);}
 												
 									      pwm_percent=(pwm*1000.0)/tim_arr/10.0;
+												energy_w=0.001078*rpm*rpm/1000;  //Энергия в КВТ
 									      sys_write_vp(0x2081,(u16*)&rpm,1);	
 									      sys_write_vp(0x2083,(u16*)&pwm,1);
                         sys_write_vp(0x2007,(u16*)&freq,2);		
                         sys_write_vp(0x2115,(u8*)&pwm_percent,2);	
-									 
-									 
+												sys_write_vp(0x2119,(u8*)&energy_w,2);
+									 								 
                        } else {
 												 	sys_write_vp(0x2096, "DATA_ERR\n", 6);
 												 
@@ -248,6 +253,19 @@ idata  ModbusRequest request[DEVICES] = {
                       
                         }
                     break;
+												
+								 case 0x08:		 
+					       // Проверяем длину данных
+                    if (receivedPacket.rcv_dataLength >= 2) {
+                        // Извлекаем данные (первый регистр)
+                        rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
+                      
+                      
+                      									
+                       } else {
+                      
+                        }
+                    break;				
 																								
 																	
 												
