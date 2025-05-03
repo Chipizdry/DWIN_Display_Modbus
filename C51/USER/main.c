@@ -32,7 +32,7 @@ idata  ModbusRequest request[DEVICES] = {
     {0x5, 0x3,   0x0000, 0x1,0x0000},   // Устройство 6
 		{0x6, 0x3,   0x0000, 0x1,0x0000},   // Устройство 7
 		{0x7, 0x3,   0x0000, 0x1,0x0000},   // Устройство 8
-		{0x8, 0x3,   0x0000, 0x6,0x0000}    // Устройство 8
+		{0x8, 0x3,   0x0000, 0x7,0x0000}    // Устройство 8
 };
 
  idata  ModbusRequest temp_request;
@@ -66,6 +66,7 @@ idata  ModbusRequest request[DEVICES] = {
 	float temperature_2;
 	float temperature_3;
 	float temperature_4;
+	float temperature_adc;
 	float pwm_percent;
 	float energy_j;
 	float energy_w;
@@ -79,6 +80,13 @@ idata  ModbusRequest request[DEVICES] = {
 	u16 color_speed;
   u16 receive_cmd=0;
   xdata u16 receive_adr=0;
+	
+	u16 voltage_adc;
+	u16 current_adc;
+	u16 test_data_1;
+	u16 test_data_2;
+	u16 test_data_3;
+	u16 test_data_4;
 	
 
      xdata u16 result=0;	
@@ -258,9 +266,29 @@ idata  ModbusRequest request[DEVICES] = {
 					       // Проверяем длину данных
                     if (receivedPacket.rcv_dataLength >= 2) {
                         // Извлекаем данные (первый регистр)
-                        rawValue = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
+                        voltage_adc = (receivedPacket.rcv_data[0] << 8) | receivedPacket.rcv_data[1];
+											  current_adc = (receivedPacket.rcv_data[2] << 8) | receivedPacket.rcv_data[3];
+										       rawValue = (receivedPacket.rcv_data[4] << 8) | receivedPacket.rcv_data[5];
+											  test_data_1 = (receivedPacket.rcv_data[6] << 8) | receivedPacket.rcv_data[7];
+											  test_data_2 = (receivedPacket.rcv_data[8] << 8) | receivedPacket.rcv_data[9];
+											  test_data_3 = (receivedPacket.rcv_data[10] << 8) | receivedPacket.rcv_data[11];
+											  test_data_4 = (receivedPacket.rcv_data[12] << 8) | receivedPacket.rcv_data[13];
                       
-                      
+											if (rawValue & 0x8000) { // Проверяем знак числа
+                            rawValue = rawValue - 65536; // Отрицательное значение
+                        }
+                       temperature_adc = rawValue / 10.0; // Масштабирование
+                       sys_write_vp(0x2139,(u8*)&temperature_adc,2);	
+                     	
+											
+											  sys_write_vp(0x2123,(u16*)&voltage_adc,1);	
+									      sys_write_vp(0x2125,(u16*)&current_adc,1);
+											  sys_write_vp(0x2127,(u16*)&rawValue,1);
+									      sys_write_vp(0x2129,(u16*)&test_data_1,1);
+											  sys_write_vp(0x2131,(u16*)&test_data_2,1);	
+									      sys_write_vp(0x2133,(u16*)&test_data_3,1);
+											  sys_write_vp(0x2135,(u16*)&test_data_4,1);	
+									        rawValue =	0;	
                       									
                        } else {
                       
