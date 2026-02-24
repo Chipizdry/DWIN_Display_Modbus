@@ -67,6 +67,7 @@ idata  ModbusRequest request[DEVICES] = {
 	float temperature_3;
 	float temperature_4;
 	float temperature_adc;
+	float current;
 	float pwm_percent;
 	float energy_j;
 	float energy_w;
@@ -82,7 +83,7 @@ idata  ModbusRequest request[DEVICES] = {
   xdata u16 receive_adr=0;
 	
 	u16 voltage_adc;
-	u16 current_adc;
+	s16 current_adc;
 	u16 test_data_1;
 	u16 test_data_2;
 	u16 test_data_3;
@@ -273,22 +274,24 @@ idata  ModbusRequest request[DEVICES] = {
 											  test_data_2 = (receivedPacket.rcv_data[8] << 8) | receivedPacket.rcv_data[9];
 											  test_data_3 = (receivedPacket.rcv_data[10] << 8) | receivedPacket.rcv_data[11];
 											  test_data_4 = (receivedPacket.rcv_data[12] << 8) | receivedPacket.rcv_data[13];
-                      
-											if (rawValue & 0x8000) { // Проверяем знак числа
-                            rawValue = rawValue - 65536; // Отрицательное значение
+											
+                        sys_write_vp(0x2125,(u16*)&current_adc,1);
+											/*											 if (current_adc & 0x8000) { // Проверяем знак числа
+                            current_adc = current_adc - 65536; // Отрицательное значение
                         }
-                       temperature_adc = rawValue / 10.0; // Масштабирование
-                       sys_write_vp(0x2139,(u8*)&temperature_adc,2);	
+										*/
+                       current = current_adc / 1000.0; // Масштабирование
+                       sys_write_vp(0x2139,(u8*)&current,2);	
                      	
 											
 											  sys_write_vp(0x2123,(u16*)&voltage_adc,1);	
-									      sys_write_vp(0x2125,(u16*)&current_adc,1);
-											  sys_write_vp(0x2127,(u16*)&rawValue,1);
+									     // sys_write_vp(0x2125,(u16*)&current_adc,1);
+											 // sys_write_vp(0x2127,(u16*)&rawValue,1);
 									      sys_write_vp(0x2129,(u16*)&test_data_1,1);
 											  sys_write_vp(0x2131,(u16*)&test_data_2,1);	
 									      sys_write_vp(0x2133,(u16*)&test_data_3,1);
 											  sys_write_vp(0x2135,(u16*)&test_data_4,1);	
-									        rawValue =	0;	
+									       
                       									
                        } else {
                       
